@@ -1,0 +1,19 @@
+instrcutor တွေအတွက် အားသာချက်
+===============================
+=>  student က lesson တွေကို အစီအစဉ်အတိုင်း လေ့လာနိုင်မယ်
+=>  live class သင်တဲ့ ဆရာတွေဆိုရင် သင်ကြားရေး အထောက်အကူအနေနဲ့ သုံးနိုင်ပြီးတော့ 
+    လေ့ကျင့်ခန်းနဲ့ Training ပိုင်းကို ပိုပြီးတော့ အလေးပေးနိုင်မယ်
+=>  password sharing လုပ်ပြီး သင်တန်းကို မဆိုင်သူတေွ ဝင်ရောက်လေ့လာတာကို ကာကွယ်နိုင်မယ်
+=>  lecture တွေကို ခွင့်ပြုချက်မရှိဘဲ ပြန်လည်မျှဝေတာကို ကာကွယ်နိုင်မယ်
+=>  social media မဟုတ်ဘဲ သီးသန့် Education Platform ဖြစ်တဲ့အတွက် မှန်ကန်တဲ့ audience နဲ့
+    engage ဖြစ်နိုင်ချေများတယ်။
+=>  lecture တွေကို ပြန်လည်ပြင်ဆင်တာ upgrade လုပ်တဲ့နေရာတေွ မှာ social media group တွေနဲ့ မတူဘဲ
+    အလွယ်တကူ ပြုလုပ်နိုင်မယ်
+=>  Mordern Technology technique ဖြစ်တဲ့အတွက် ကိုယ့်ရဲ့ Branding ကို အဆင့်မြင့်တင်ရာ ရောက်တယ်
+=>  ကုန်ကျစရိတ်သက်သာတယ်
+
+
+=> laravel query fetcher
+composer require barryvdh/laravel-debugbar --dev
+php artisan vendor:publish --provider="Barryvdh\Debugbar\ServiceProvider"
+
