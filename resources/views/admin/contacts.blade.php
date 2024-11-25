@@ -122,7 +122,7 @@
                     @foreach ($ads as $ad)
                         <div class="col-lg-6">
                             <img style="width: 100%; height:120px; margin:10px; border-radius:10px;" 
-                             src="{{asset('storage/'.$ad->url)}}" alt="">
+                             src="{{ Storage::url('app/public/'.$ad->url) }}" alt="">
                         </div>
                     @endforeach
                 </div>
