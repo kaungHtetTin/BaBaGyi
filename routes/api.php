@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\BankingController;
 use App\Http\Controllers\Api\AvatarController;
 use App\Http\Controllers\Api\RemoteNumberController;
+use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\NoticeController;
+use App\Http\Controllers\Api\AdminNotifyController;
 
 Route::post('/sanctum/token', function (Request $request) {
     $request->validate([
@@ -57,6 +60,7 @@ Route::post('/sanctum/token', function (Request $request) {
     Route::get('/user/wallet-histories', [UserController::class,'walletHistories']);
     Route::post('/user/update', [UserController::class,'update']);
 
+    Route::get('/payment-method',[PaymentMethodController::class,'payment_method']);
     Route::post('/top-up', [TransactionController::class,'store']);
 
     Route::post('/withdraw', [WithdrawController::class,'store']);
@@ -65,6 +69,7 @@ Route::post('/sanctum/token', function (Request $request) {
     Route::post('/delete-account', [AuthController::class,'deleteAccount']);
 
     Route::post('/vouchers/store',[VoucherController::class,'store']);
+    Route::get('/notices',[NoticeController::class,'index']);
     
 });
 
@@ -76,6 +81,7 @@ Route::get('/lotteries/records',[LotteryController::class,'records']);
 Route::get('/lotteries/3d-records',[LotteryController::class,'_3d_records']);
 Route::get('/lottery-types/{id}/clocks',[LotteryTypeController::class,'clocks']);
 
+Route::get('/contacts',[ContactController::class,'index']);
 
 
 Route::get('/bankings',[BankingController::class,'index']);
@@ -84,6 +90,8 @@ Route::get('/avatars',[AvatarController::class,'index']);
 
 Route::get('/remote/thai-2d',[RemoteNumberController::class,'get2DNumber']);
 Route::get('/remote/thai-3d',[RemoteNumberController::class,'get3DNumber']);
+
+Route::get('/admin-notify',[AdminNotifyController::class,'notify']);
 
 Route::get('/time-zone',function(){
     $now = now();

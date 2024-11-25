@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('amount')->default(0);
             $table->boolean('verified')->default(false);
             $table->unsignedBigInteger('verified_by')->nullable();
-            
+            $table->integer('bank_transaction_id');
             $table->timestamps();
             $table->index('user_id');
           

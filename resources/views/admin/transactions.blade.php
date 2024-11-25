@@ -32,6 +32,7 @@
                             <th style="background: rgb(249, 255, 239)">Banking</th>
                             <th style="background: rgb(249, 255, 239)">Account Name</th>
                             <th style="background: rgb(249, 255, 239)">Phone</th>
+                            <th style="background: rgb(249, 255, 239)">Trx Id</th>
                             <th>Admin</th>
                             <th>Status</th>
                             
@@ -46,6 +47,7 @@
                             <th style="background: rgb(249, 255, 239)">Banking</th>
                             <th style="background: rgb(249, 255, 239)">Account Name</th>
                             <th style="background: rgb(249, 255, 239)">Phone</th>
+                            <th style="background: rgb(249, 255, 239)">Trx Id</th>
                             <th>Admin</th>
                             <th>Status</th>
                              
@@ -55,7 +57,7 @@
                         @foreach ($transactions as $transaction)
                             <tr>
                                 <td>{{$transaction->created_at->diffForHumans()}}</td>
-                                <td>{{$transaction->user->name}}</td>
+                                <td><a href="{{route('admin.users.transactions',$transaction->user_id)}}" style="text-decoration: none">{{$transaction->user->name}}</a></td>
                                 <td>{{$transaction->amount}}</td>
                                 <td  style="background: rgb(249, 255, 239);text-align:center">
                                     <img src="{{asset($transaction->payment_method->banking->icon_url)}}" alt="" style="width: 20px;border-radius:5px;">
@@ -63,6 +65,7 @@
                                 </td>
                                 <td  style="background: rgb(249, 255, 239)">{{$transaction->payment_method->account_name}}</td>
                                 <td  style="background: rgb(249, 255, 239)">{{$transaction->payment_method->method}}</td>
+                                <td  style="background: rgb(249, 255, 239)">{{$transaction->bank_transaction_id}}</td>
                                 <td>
                                     @if ($transaction->verified_by != 0)
                                         {{$transaction->verified_by($transaction->verified_by)->name}}

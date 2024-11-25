@@ -36,7 +36,7 @@ class TransactionController extends Controller
 
         $wallet = new WalletHistory();
         $wallet->user_id = $user->id;
-        $wallet->title = "Top up";
+        $wallet->title = "ငွေသွင်း";
         $wallet->amount = $transaction->amount;
         $wallet->income = 1;
         $wallet->save();

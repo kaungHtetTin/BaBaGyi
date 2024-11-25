@@ -108,7 +108,7 @@
                 <h6 class="collapse-header">Admin Setting:</h6>
                 <a class="collapse-item" href="{{route('admin.admins')}}">Admin List</a>
                 <a class="collapse-item" href="{{route('admin.payment-methods')}}">Payment Methods</a>
-                <a class="collapse-item" href="{{route('admin.contacts')}}">Contacts</a>
+                <a class="collapse-item" href="{{route('admin.contacts')}}">Misc Setting</a>
                 {{-- <a class="collapse-item" href="{{route('admin.lottery-types')}}">Lottery Type</a>
                 <a class="collapse-item" href="{{route('admin.bankings')}}">Supported Banking</a> --}}
             </div>

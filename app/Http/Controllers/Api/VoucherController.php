@@ -83,7 +83,7 @@ class VoucherController extends Controller
 
             $wallet = new WalletHistory();
             $wallet->user_id = $user->id;
-            $wallet->title = "Buy Lottery";
+            $wallet->title = "ထီထိုး";
             $wallet->amount = $amount;
             $wallet->income = 0;
             $wallet->save();

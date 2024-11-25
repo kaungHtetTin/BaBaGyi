@@ -122,17 +122,17 @@ class DatabaseSeeder extends Seeder
             //     ]);
             // }
 
-            // for($i = 1; $i<5 ;$i++){
-            //     if($i == 2 || $i == 4){
-            //         Lottery::create([
-            //             'lottery_type_id' => 2,
-            //             'clock_id' => $i,
-            //             'number' => rand(10,99),
-            //             'created_at' =>"2024-11-$day 14:43:56",
-            //             'updated_at' =>"2024-11-$day 14:43:56",
-            //         ]);
-            //     }
-            // }
+            for($i = 1; $i<5 ;$i++){
+                if($i == 2 || $i == 4){
+                    Lottery::create([
+                        'lottery_type_id' => 2,
+                        'clock_id' => $i,
+                        'number' => rand(10,99),
+                        'created_at' =>"2024-11-$day 14:43:56",
+                        'updated_at' =>"2024-11-$day 14:43:56",
+                    ]);
+                }
+            }
 
             // if($j == 0 || $j == 14){
             //     Lottery::create([

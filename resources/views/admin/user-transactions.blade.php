@@ -62,6 +62,7 @@
                             <th style="background: rgb(249, 255, 239)">Banking</th>
                             <th style="background: rgb(249, 255, 239)">Account Name</th>
                             <th style="background: rgb(249, 255, 239)">Phone</th>
+                            <th style="background: rgb(249, 255, 239)">Trx Id</th>
                             <th>Admin</th>
                             <th>Status</th>
                             
@@ -71,11 +72,11 @@
                     <tfoot>
                         <tr>
                             <th>Date</th>
-                            <th>Name</th>
                             <th>Amount</th>
                             <th style="background: rgb(249, 255, 239)">Banking</th>
                             <th style="background: rgb(249, 255, 239)">Account Name</th>
                             <th style="background: rgb(249, 255, 239)">Phone</th>
+                            <th style="background: rgb(249, 255, 239)">Trx Id</th>
                             <th>Admin</th>
                             <th>Status</th>
                                 
@@ -92,6 +93,7 @@
                                 </td>
                                 <td  style="background: rgb(249, 255, 239)">{{$transaction->payment_method->account_name}}</td>
                                 <td  style="background: rgb(249, 255, 239)">{{$transaction->payment_method->method}}</td>
+                                <td  style="background: rgb(249, 255, 239)">{{$transaction->bank_transaction_id}}</td>
                                 <td>
                                     @if ($transaction->verified_by != 0)
                                         {{$transaction->verified_by($transaction->verified_by)->name}}

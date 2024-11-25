@@ -58,7 +58,7 @@
                         @foreach ($withdraws as $withdraw)
                              <tr>
                                 <td>{{$withdraw->created_at->diffForHumans()}}</td>
-                                <td>{{$withdraw->user->name}}</td>
+                                <td><a href="{{route('admin.users.withdraws',$withdraw->user_id)}}" style="text-decoration: none">{{$withdraw->user->name}}</a></td>
                                 <td>{{$withdraw->user->balance}}</td>
                                 <td>{{$withdraw->amount}}</td>
                                 <td style="text-align: center">

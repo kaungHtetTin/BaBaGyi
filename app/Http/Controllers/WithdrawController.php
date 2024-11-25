@@ -31,7 +31,7 @@ class WithdrawController extends Controller
 
         $wallet = new WalletHistory();
         $wallet->user_id = $withdraw->user_id;
-        $wallet->title = "Withdraw";
+        $wallet->title = "ငွေထုတ်";
         $wallet->amount = $withdraw->amount;
         $wallet->income = 0;
         $wallet->save();

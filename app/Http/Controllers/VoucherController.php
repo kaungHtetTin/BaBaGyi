@@ -75,7 +75,7 @@ class VoucherController extends Controller
 
         $wallet_history = new WalletHistory();
         $wallet_history->user_id = $user->id;
-        $wallet_history->title = "Win lottery";
+        $wallet_history->title = "ထီပေါက်";
         $wallet_history->amount = $voucher->amount * $coefficient;
         $wallet_history->income = 1;
         $wallet_history->save();
@@ -97,7 +97,7 @@ class VoucherController extends Controller
 
         $wallet_history = new WalletHistory();
         $wallet_history->user_id = $user->id;
-        $wallet_history->title = "Cashback for Lottery Holiday";
+        $wallet_history->title = "ထီအားလပ်ရက်အတွက် ငွေပြန်အမ်းခြင်း";
         $wallet_history->amount = $amount;
         $wallet_history->income = 1;
         $wallet_history->save();

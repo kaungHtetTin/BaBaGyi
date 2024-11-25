@@ -1,5 +1,10 @@
 @extends('admin.master')
 @section('content')
+    <style>
+        .tbl-unexpected tr{
+            font-size: 14px;
+        }
+    </style>
     <div class="container-fluid">
         <!-- Page Heading -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -8,11 +13,50 @@
 
         <!-- Content Row -->
         <div class="row">
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <a href="{{route('admin.transactions')}}" style="text-decoration: none">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Transaction Requests</div>
+                                    <div id="trx_count" class="h5 mb-0 font-weight-bold text-danger">{{$transaction_req}}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-arrow-down fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Pending Requests Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <a href="{{route('admin.withdraws')}}" style="text-decoration: none">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Withdraw Requests</div>
+                                    <div id="withdraw_count" class="h5 mb-0 font-weight-bold text-danger">{{$withdraw_req}}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-arrow-right fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
             <!-- Pending Requests Card Example -->
              <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card shadow h-100 py-2">
                     <div class="card-header">
-                        Thai 2D
+                        MM 2D
                     </div>
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -59,7 +103,7 @@
                             <hr>
                             <div class="row">
                                 <div class="col-6">
-                                    <table width="100%">
+                                    <table class="tbl-unexpected" width="100%">
                                         <tr>
                                             <th>12:01 PM</th>
                                             <th>Pay</th>
@@ -73,7 +117,7 @@
                                     </table>
                                 </div>
                                 <div class="col-6">
-                                    <table width="100%">
+                                    <table class="tbl-unexpected" width="100%">
                                         <tr>
                                             <th>04:30 PM</th>
                                             <th>Pay</th>
@@ -96,7 +140,7 @@
              <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card shadow h-100 py-2">
                     <div class="card-header">
-                        Thai 3D
+                        MM 3D
                     </div>
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -143,7 +187,7 @@
                             <hr>
                             <div class="row">
                                 <div class="col-6">
-                                    <table width="100%">
+                                    <table class="tbl-unexpected" width="100%">
                                         <tr>
                                             <th>{{date('M')}} 1</th>
                                             <th>Pay</th>
@@ -157,7 +201,7 @@
                                     </table>
                                 </div>
                                 <div class="col-6">
-                                    <table width="100%">
+                                    <table class="tbl-unexpected" width="100%">
                                         <tr>
                                             <th>{{date('M')}} 16</th>
                                             <th>Pay</th>
@@ -177,43 +221,6 @@
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-4">
-                <a href="{{route('admin.transactions')}}" style="text-decoration: none">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Transaction Requests</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{$transaction_req}}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-arrow-down fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <!-- Pending Requests Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
-                <a href="{{route('admin.withdraws')}}" style="text-decoration: none">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Withdraw Requests</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{$withdraw_req}}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-arrow-right fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
 
             <!-- Earnings (Monthly) Card Example -->
             <div class="col-xl-3 col-md-6 mb-4">
@@ -355,15 +362,33 @@
             setInterval(() => {
                 fetchThai2DNumber();
                 fetchThai3DNumber();
+                notify();
             }, 5000);
         });
+
+        function notify(){
+            $.ajax({
+                url: `{{asset('')}}api/admin-notify`,
+                type: 'GET',
+                success: function(res) {
+                    console.log('res', res);
+                    $('#withdraw_count').html(res.withdraw_req);
+                    $('#trx_count').html(res.transaction_req);
+
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', status, error);
+                }
+            })
+        }
 
         function fetchThai2DNumber(){
             $.ajax({
                 url: `{{asset('')}}api/remote/thai-2d`,
                 type: 'GET',
                 success: function(res) {
-                    console.log('2d ',res);
+                   
+                 //   res = JSON.parse(res);
 
                     if(res.live){
                         let live = res.live;
@@ -394,21 +419,21 @@
             })
         }
 
-
         function fetchThai3DNumber(){
             $.ajax({
                 url: `{{asset('')}}api/remote/thai-3d`,
                 type: 'GET',
                 success: function(res) {
-                    console.log('3d ',res);
                     $('#3d_live_num').html(res.number);
-                    let history = res.history;
+                    if(res.history){
+                        let history = res.history;
                      
-                    if(history.first){
-                        $('#3d_result_num_1').html(history.first.number)
-                    }
-                    if(history.second){
-                        $('#3d_result_num_2').html(history.first.number)
+                        if(history.first){
+                            $('#3d_result_num_1').html(history.first.number)
+                        }
+                        if(history.second){
+                            $('#3d_result_num_2').html(history.second.number)
+                        }
                     }
 
                 },

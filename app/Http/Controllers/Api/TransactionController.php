@@ -13,33 +13,27 @@ class TransactionController extends Controller
     
     public function store(Request $req){
         $req->validate([
-            'banking_id' => 'required',
+            'payment_method_id' => 'required',
             'amount' => 'required',
+            'bank_transaction_id'=>'required',
         ]);
-        $payment_method = PaymentMethod::with('banking:id,bank,icon_url')
-        ->where('banking_id',$req->banking_id)
-        ->orderBy(DB::raw("rand()"))
-        ->limit(1)->get();
-
-
-        $payment_method = $payment_method[0];
-        $amount = $req->amount;
-        $amount = $amount + rand(0,300);
 
         $user = $req->user();
  
         $transaction = new Transaction();
-        $transaction->payment_method_id = $payment_method->id;
+        $transaction->payment_method_id = $req->payment_method_id;
         $transaction->user_id = $user->id;
-        $transaction->amount = $amount;
+        $transaction->amount = $req->amount;
+        $transaction->bank_transaction_id = $req->bank_transaction_id;
         $transaction->save();
 
+        $payment_method = PaymentMethod::find($req->payment_method_id);
         $payment_method->new_payment_count = $payment_method->new_payment_count + 1;
         $payment_method->save();
 
         return response()->json([
             'payment_method'=>$payment_method,
-            'amount'=>$amount,
+            'amount'=>$req->amount,
         ],200);
         
     }

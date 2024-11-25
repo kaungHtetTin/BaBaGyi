@@ -16,6 +16,8 @@ use App\Http\Controllers\LayoutController;
 use App\Http\Controllers\LotteryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AdsController;
+use App\Http\Controllers\NoticeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -89,10 +91,15 @@ Route::middleware('auth')->group(function () {
         Route::put('/change-password',[ProfileController::class,'changePassword'])->name('admin.password.modify');
 
         Route::get('/contacts',[ContactController::class,'index'])->name('admin.contacts');
+        Route::post('/contacts',[ContactController::class,'store'])->name('admin.contacts.store');
+        Route::delete('/contacts/{id}',[ContactController::class,'delete'])->name('admin.contacts.remove');
 
+        Route::post('/ad-photos',[AdsController::class, 'store'])->name('admin.ad-photo.save');
+
+        Route::post('/notices',[NoticeController::class,'store'])->name('admin.notices.save');
+        Route::delete('/notices/{id}',[NoticeController::class,'delete'])->name('admin.notices.remove');
     });
 });
-
 
 
 Route::get('/login',function(){
