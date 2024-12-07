@@ -27,6 +27,19 @@ class UserController extends Controller
         return response()->json($transactions);
     }
 
+    public function updateRecoveryHint(Request $req){
+        $req->validate([
+            'recovery_hint'=>'required',
+        ]);
+        $user = User::find($req->user()->id);
+        $user->recovery_hint = $req->recovery_hint;
+        $user->save();
+        return response()->json([
+            'status'=>"success",
+            'user'=>$user,
+        ]);
+    }
+
     public function unverified_transactions(Request $req){
         $user = $req->user();
         $transactions = Transaction::where('user_id',$user->id)

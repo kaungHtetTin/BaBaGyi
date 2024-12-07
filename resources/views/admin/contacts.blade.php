@@ -116,16 +116,69 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Ad Photo</h1>
         </div>
+    
         <div class="row">
             <div class="col-lg-7 col-md-6">
-                <div class="row">
-                    @foreach ($ads as $ad)
-                        <div class="col-lg-6">
-                            <img style="width: 100%; height:120px; margin:10px; border-radius:10px;" 
-                             src="{{ Storage::url('app/public/'.$ad->url) }}" alt="">
-                        </div>
-                    @endforeach
-                </div>
+                @if (count($ads)>0)
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Content</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Content</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                @foreach ($ads as $ad)
+                                    <tr>
+                                        <td>
+                                            <img style="width: 80px; height:45px; margin:10px; border-radius:10px;" 
+                                            src="{{ Storage::url('app/public/'.$ad->url) }}" alt="">
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-danger action-button"href="#" data-toggle="modal" data-target="#delete-modal-adphoto-{{$ad->id}}"> Delete</a>
+                                        </td>
+
+                                        <div class="modal fade" id="delete-modal-adphoto-{{$ad->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                                            aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="">Delete Photo</h5>
+                                                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">×</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="alert alert-warning">
+                                                        Do you really want to delete it?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                        <form action="{{route('admin.ad-photo.destroy',$ad->id)}}" method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button class="btn btn-danger">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div>No Ad Photo is added</div>
+                @endif
+                
             </div>
             <div class="col-lg-5 col-md-6">
                 <h5>Add new ad photo</h5>
@@ -147,57 +200,57 @@
         <div class="row">
             <div class="col-lg-7 col-md-6">
                 <div class="table-responsive">
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Content</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>Content</th>
+                                <th>Action</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            @foreach ($notices as $notice)
                                 <tr>
-                                    <th>Content</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                    <th>Content</th>
-                                    <th>Action</th>
-                                </tr>
-                            </tfoot>
-                            <tbody>
-                                @foreach ($notices as $notice)
-                                    <tr>
-                                        <td>{{$notice->content}}</td>
-                                        <td>
-                                            <a class="btn btn-danger action-button"href="#" data-toggle="modal" data-target="#delete-modal-notice-{{$notice->id}}"> Delete</a>
-                                        </td>
+                                    <td>{{$notice->content}}</td>
+                                    <td>
+                                        <a class="btn btn-danger action-button"href="#" data-toggle="modal" data-target="#delete-modal-notice-{{$notice->id}}"> Delete</a>
+                                    </td>
 
-                                        <div class="modal fade" id="delete-modal-notice-{{$notice->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="">Delete Notice</h5>
-                                                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">×</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="alert alert-warning">
-                                                        Do you really want to delete it?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                        <form action="{{route('admin.notices.remove',$notice->id)}}" method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button class="btn btn-danger">Delete</button>
-                                                        </form>
-                                                    </div>
+                                    <div class="modal fade" id="delete-modal-notice-{{$notice->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="">Delete Notice</h5>
+                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">×</span>
+                                                    </button>
+                                                </div>
+                                                <div class="alert alert-warning">
+                                                    Do you really want to delete it?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                    <form action="{{route('admin.notices.remove',$notice->id)}}" method="POST">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="btn btn-danger">Delete</button>
+                                                    </form>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="col-lg-5 col-md-6">
                 <h5>Add new notice</h5>

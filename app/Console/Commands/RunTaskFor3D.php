@@ -35,7 +35,7 @@ class RunTaskFor3D extends Command
         $lottery_type_id = 5;
         $clock_id = 5;
 
-        if($day == 5 || $day == 16){
+        if($day == 1 || $day == 16){
             
             $response = file_get_contents("https://www.calamuseducation.com/api-3d.php");
             $result = json_decode($response,true);

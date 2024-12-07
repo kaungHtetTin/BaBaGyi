@@ -60,6 +60,7 @@ Route::post('/sanctum/token', function (Request $request) {
     Route::get('/user/vouchers', [UserController::class,'vouchers']);
     Route::get('/user/wallet-histories', [UserController::class,'walletHistories']);
     Route::post('/user/update', [UserController::class,'update']);
+    Route::post('/user/update-password-recovery-hint', [UserController::class,'updateRecoveryHint']);
 
     Route::get('/payment-method',[PaymentMethodController::class,'payment_method']);
     Route::post('/top-up', [TransactionController::class,'store']);

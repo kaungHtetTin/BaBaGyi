@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
         
 
         Route::post('/ad-photos',[AdsController::class, 'store'])->name('admin.ad-photo.save');
+        Route::delete('/ad-photos/{id}',[AdsController::class, 'destroy'])->name('admin.ad-photo.destroy');
 
         Route::post('/notices',[NoticeController::class,'store'])->name('admin.notices.save');
         Route::delete('/notices/{id}',[NoticeController::class,'delete'])->name('admin.notices.remove');

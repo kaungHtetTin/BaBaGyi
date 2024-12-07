@@ -53,7 +53,7 @@ class RunTaskAt430PM extends Command
 
         $result = json_decode($response,true);
         
-       $win_num = $result['live']['twod'];
+        $win_num = $result['live']['twod'];
 
     
         $lottery = new Lottery();

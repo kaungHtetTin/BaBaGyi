@@ -27,4 +27,14 @@ class AdsController extends Controller
         return "hello";
 
     }
+
+    public function destroy($id){
+        $ad = Ads::find($id);
+        $image_url = $ad->url;
+        if ($image_url) {
+            Storage::disk('public')->delete($image_url); // Delete old image
+        }
+        $ad->delete();
+        return back()->with('msg', 'The ad photo was successfully deleted');
+    }
 }
