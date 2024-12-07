@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Lottery;
 use App\Models\Voucher;
+use App\Models\Number;
 use Illuminate\Support\Facades\DB;
 
 class RunTaskFor3D extends Command
@@ -31,8 +32,10 @@ class RunTaskFor3D extends Command
     public function handle()
     {
         $day = date('d');
+        $lottery_type_id = 5;
+        $clock_id = 5;
 
-        if($day == 1 || $day == 16){
+        if($day == 5 || $day == 16){
             
             $response = file_get_contents("https://www.calamuseducation.com/api-3d.php");
             $result = json_decode($response,true);
@@ -60,6 +63,8 @@ class RunTaskFor3D extends Command
             ->where('clock_id',5)
             ->where('number','!=',$win_num)
             ->update(['win'=>0,'verified'=>1]);
+
+            Number::where('clock_id',$clock_id)->where('lottery_type_id',$lottery_type_id)->update(['demand'=>0,'disable'=>0]);
         }
 
         return Command::SUCCESS;

@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\RemoteNumberController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\AdminNotifyController;
+use App\Http\Controllers\Api\NumberController;
 
 Route::post('/sanctum/token', function (Request $request) {
     $request->validate([
@@ -83,7 +84,6 @@ Route::get('/lottery-types/{id}/clocks',[LotteryTypeController::class,'clocks'])
 
 Route::get('/contacts',[ContactController::class,'index']);
 
-
 Route::get('/bankings',[BankingController::class,'index']);
 
 Route::get('/avatars',[AvatarController::class,'index']);
@@ -92,6 +92,8 @@ Route::get('/remote/thai-2d',[RemoteNumberController::class,'get2DNumber']);
 Route::get('/remote/thai-3d',[RemoteNumberController::class,'get3DNumber']);
 
 Route::get('/admin-notify',[AdminNotifyController::class,'notify']);
+
+Route::get('/numbers',[NumberController::class,'index']);
 
 Route::get('/time-zone',function(){
     $now = now();

@@ -36,7 +36,7 @@
                             @if ($user->disable)
                                 <span style="color: red">Disable</span>
                             @else 
-                                <span style="color:green">Active</span>
+                                <span style="color:green"><b>Active</b></span>
                             @endif
                         </td>
                     </tr>

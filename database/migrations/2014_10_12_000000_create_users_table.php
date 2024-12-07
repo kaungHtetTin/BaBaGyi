@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->string('recovery_hint');
             $table->integer('balance')->default(0);
             $table->string('fcm_token')->nullable();
             $table->string('avatar_url')->nullable();

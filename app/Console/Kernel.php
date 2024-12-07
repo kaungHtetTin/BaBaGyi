@@ -20,8 +20,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('command:runat1201pm')->dailyAt('12:01');
         $schedule->command('command:runat430pm')->dailyAt('16:30');
         $schedule->command('command:runtaskfor3d')->dailyAt('15:30');
-
-        $schedule->command('command:runtaskfor3d');
       
     }
 

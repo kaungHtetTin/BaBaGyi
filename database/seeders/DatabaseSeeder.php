@@ -14,7 +14,7 @@ use App\Models\LotteryType;
 use App\Models\LotteryClock;
 use App\Models\Avatar;
 use App\Models\Banking;
-
+use App\Models\Number;
 
 use Illuminate\Support\Str;
 
@@ -117,6 +117,52 @@ class DatabaseSeeder extends Seeder
         // Banking::create(['bank'=>'Wave pay','icon_url'=>'img/payment-wave-pay.jpg']);
         // Banking::create(['bank'=>'CB pay','icon_url'=>'img/payment-cb-pay.png']);
         // Banking::create(['bank'=>'AYA pay','icon_url'=>'img/payment-aya-pay.png']);
+
+        // for($i=0; $i<=9 ; $i++){
+        //     for($j=0; $j<=9; $j++){
+        //         $number = $i.$j;
+        //         Number::create([
+        //             'clock_id'=>2,
+        //             'lottery_type_id'=>2,
+        //             'number' => $number,
+        //             'sell'=> 1000000,
+        //             'disable'=>0,
+        //             'demand'=>0,
+        //         ]);
+
+        //     }
+        // }
+
+        // for($i=0; $i<=9 ; $i++){
+        //     for($j=0; $j<=9; $j++){
+        //         $number = $i.$j;
+        //         Number::create([
+        //             'clock_id'=>4,
+        //             'lottery_type_id'=>2,
+        //             'number' => $number,
+        //             'sell'=> 1000000,
+        //             'demand'=>0,
+        //             'disable'=>0,
+        //         ]);
+        //     }
+        // }
+
+        // for($i=0; $i<=9 ; $i++){
+        //     for($j=0; $j<=9; $j++){
+        //         for($k=0;$k<=9;$k++){
+        //             $number = $i.$j.$k;
+        //             Number::create([
+        //                 'clock_id'=>5,
+        //                 'lottery_type_id'=>3,
+        //                 'number' => $number,
+        //                 'sell'=> 100000,
+        //                 'demand'=>0,
+        //                 'disable'=>0,
+        //             ]);
+        //         }
+        //     }
+        // }
+
         
         for($j = 0;$j<31;$j++){
             $day = $j+1;

@@ -63,8 +63,27 @@
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Vouchers</h6>
                 {{-- <a class="collapse-item" href="{{route('admin.vouchers.btc-2d')}}">BTC 2D</a> --}}
-                <a class="collapse-item" href="{{route('admin.vouchers.thai-2d')}}">Thai 2D</a>
-                <a class="collapse-item" href="{{route('admin.vouchers.thai-3d')}}">Thai 3D</a>
+                <a class="collapse-item" href="{{route('admin.vouchers.thai-2d')}}">MM 2D</a>
+                <a class="collapse-item" href="{{route('admin.vouchers.thai-3d')}}">MM 3D</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Nav Item - Utilities Collapse Menu -->
+    <li class="nav-item {{$page_name == "Number Setting"? 'active' : ''}}">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseNumberSetting"
+            aria-expanded="true" aria-controls="collapseNumberSetting">
+            <i class="fas fa-fw fa-cog"></i>
+            <span>Number Setting</span>
+        </a>
+        <div id="collapseNumberSetting" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Vouchers</h6>
+                {{-- <a class="collapse-item" href="{{route('admin.vouchers.btc-2d')}}">BTC 2D</a> --}}
+                <a class="collapse-item" href="{{route('admin.numbers')}}?lottery_type_id=2&clock_id=2">MM 2D 12:01 PM</a>
+                <a class="collapse-item" href="{{route('admin.numbers')}}?lottery_type_id=2&clock_id=4">MM 2D 04:30 PM</a>
+                <a class="collapse-item" href="{{route('admin.numbers')}}?lottery_type_id=3&clock_id=5">MM 3D</a>
             </div>
         </div>
     </li>
@@ -81,8 +100,8 @@
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Calendar:</h6>
                 {{-- <a class="collapse-item" href="{{route('admin.vouchers.btc-2d')}}">BTC 2D</a> --}}
-                <a class="collapse-item" href="{{route('admin.lotteries.records')}}">Thai 2D</a>
-                <a class="collapse-item" href="{{route('admin.lotteries.records')}}?type=3">Thai 3D</a>
+                <a class="collapse-item" href="{{route('admin.lotteries.records')}}">MM 2D</a>
+                <a class="collapse-item" href="{{route('admin.lotteries.records')}}?type=3">MM 3D</a>
             </div>
         </div>
     </li>

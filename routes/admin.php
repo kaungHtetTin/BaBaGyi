@@ -18,6 +18,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AdsController;
 use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\NumberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,6 +94,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/contacts',[ContactController::class,'index'])->name('admin.contacts');
         Route::post('/contacts',[ContactController::class,'store'])->name('admin.contacts.store');
         Route::delete('/contacts/{id}',[ContactController::class,'delete'])->name('admin.contacts.remove');
+
+        Route::put('/numbers/disable-all',[NumberController::class,'disableAll'])->name('admin.numbers.disable-all');
+        Route::put('/numbers/reset-sell',[NumberController::class,'resetSellAmount'])->name('admin.numbers.reset-sell');
+        Route::get('/numbers',[NumberController::class,'index'])->name('admin.numbers');
+        Route::put('/numbers/{id}/disble',[NumberController::class,'disable'])->name('admin.numbers.disable');
+        Route::put('/numbers/{id}/activate',[NumberController::class,'activate'])->name('admin.numbers.activate');
+        Route::get('/numbers/{id}/edit',[NumberController::class,'edit'])->name('admin.numbers.edit');
+        Route::put('/numbers/{id}',[NumberController::class,'update'])->name('admin.numbers.modify');
+        
 
         Route::post('/ad-photos',[AdsController::class, 'store'])->name('admin.ad-photo.save');
 

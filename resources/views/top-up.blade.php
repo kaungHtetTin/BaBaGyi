@@ -19,6 +19,7 @@
     <div>
         <img class="ss" src="{{asset('/img/Top-up-1.png')}}" alt="">
         <img class="ss" src="{{asset('/img/Top-up-2.png')}}" alt="">
+        <img class="ss" src="{{asset('/img/Top-up-3.png')}}" alt="">
     </div>
     
 </body>

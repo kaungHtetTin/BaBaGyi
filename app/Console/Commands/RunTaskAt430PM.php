@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use App\Models\Lottery;
 use App\Models\Voucher;
+use App\Models\Number;
 use Illuminate\Support\Facades\DB;
 
 class RunTaskAt430PM extends Command
@@ -31,16 +32,15 @@ class RunTaskAt430PM extends Command
      */
     public function handle()
     {
-        
-        // URL you want to access
+        $lottery_type_id = 2;
+        $clock_id = 4;
+     
         $url = "https://api.thaistock2d.com/live";
 
-        // Set custom headers
         $headers = [
             "Content-Type: application/json",
         ];
 
-        // Create a stream context with the headers
         $options = [
             "http" => [
                 "method"  => "GET",
@@ -49,34 +49,36 @@ class RunTaskAt430PM extends Command
         ];
         $context = stream_context_create($options);
 
-        // Fetch the content from the URL with custom headers
         $response = file_get_contents($url, false, $context);
 
         $result = json_decode($response,true);
         
-        $win_num = $result['live']['twod'];
+       $win_num = $result['live']['twod'];
+
     
         $lottery = new Lottery();
-        $lottery->lottery_type_id = 2;
-        $lottery->clock_id = 4;        
+        $lottery->lottery_type_id = $lottery_type_id ;
+        $lottery->clock_id = $clock_id;        
         $lottery->number = $win_num;         
         $lottery->save();
 
         Voucher::where(DB::raw("DAY(created_at)"),date('d'))
         ->where(DB::raw("MONTH(created_at)"),date('m'))
         ->where(DB::raw("YEAR(created_at)"),date('Y'))
-        ->where('lottery_type_id',2)
-        ->where('clock_id',4)
+        ->where('lottery_type_id',$lottery_type_id )
+        ->where('clock_id',$clock_id)
         ->where('number',$win_num)
         ->update(['win'=>1]);
 
         Voucher::where(DB::raw("DAY(created_at)"),date('d'))
         ->where(DB::raw("MONTH(created_at)"),date('m'))
         ->where(DB::raw("YEAR(created_at)"),date('Y'))
-        ->where('lottery_type_id',2)
-        ->where('clock_id',4)
+        ->where('lottery_type_id',$lottery_type_id )
+        ->where('clock_id',$clock_id)
         ->where('number','!=',$win_num)
         ->update(['win'=>0,'verified'=>1]);
+
+        Number::where('clock_id',$clock_id)->where('lottery_type_id',$lottery_type_id)->update(['demand'=>0,'disable'=>0]);
 
         return;
     }

@@ -9,6 +9,9 @@
             margin-left:10px;
             font-size: 12px;
         }
+        table tr td{
+            font-size: 14px;
+        }
     </style>
     <div class="container-fluid">
         @if (session('msg'))
@@ -38,12 +41,16 @@
                         <td>{{$user->balance}}</td>
                     </tr>
                     <tr>
+                        <td>Password Recovery Hint</td>
+                        <td>{{$user->recovery_hint}}</td>
+                    </tr>
+                    <tr>
                         <td>Status</td>
                         <td>
                             @if ($user->disable)
                                 <span style="color: red">Disable</span>
                             @else 
-                                <span style="color:green">Active</span>
+                                <span style="color:green"><b>Active</b></span>
                             @endif
                         </td>
                     </tr>
