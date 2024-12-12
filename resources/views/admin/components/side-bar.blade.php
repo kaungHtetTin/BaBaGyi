@@ -106,6 +106,12 @@
         </div>
     </li>
 
+     <li class="nav-item {{$page_name == "Lottery Setting"? 'active' : ''}}">
+        <a class="nav-link" href="{{route('admin.lottery-types')}}">
+            <i class="fas fa-fw fa-chess-king"></i>
+            <span>Lottery Setting</span></a>
+    </li>
+
     <hr class="sidebar-divider">
 
     <li class="nav-item {{$page_name == "Users"? 'active' : ''}}">

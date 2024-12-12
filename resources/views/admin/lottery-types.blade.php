@@ -1,36 +1,51 @@
 @extends('admin.master')
 @section('content')
+    <style>
+        .action-button{
+            padding:3px;
+            font-size: 12px;
+            margin:3px;
+        }
+        table tr td{
+            font-size: 14px;
+        }
+    </style>
+
     <div class="container-fluid">
         <!-- Page Heading -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Supported Lottery Type</h1>
-        </div>
-        <div class="row">
-            @foreach ($lottery_types as $type)
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                       Lottery
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                        {{$type->type}}
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-multiple"></i>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-600">
-                                        x {{$type->coefficient}}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
+            <h1 class="h3 mb-0 text-gray-800">Lottery Types</h1>
         </div>
 
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Lottery Type</th>
+                        <th>Multiplication</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Lottery Type</th>
+                        <th>Multiplication</th>
+                        <th>Action</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    @foreach ($lottery_types as $type)
+                        <tr>
+                            <td> {{$type->type}} </td>
+                            <td>{{$type->coefficient}}</td>
+                            <td>
+                                <a class="btn btn-primary action-button"href="{{route('admin.lottery-types.edit',$type->id)}}"> Edit</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+       
     </div>
 @endsection

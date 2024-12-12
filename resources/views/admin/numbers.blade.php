@@ -67,104 +67,104 @@
         </div>
 
         <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Number</th>
+                        <th>Sell Amt</th>
+                        <th>Demand Amt</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                        
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Number</th>
+                        <th>Sell Amt</th>
+                        <th>Demand Amt</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    @foreach ($numbers as $number)
                         <tr>
-                            <th>Number</th>
-                            <th>Sell Amt</th>
-                            <th>Demand Amt</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                            
-                        </tr>
-                    </thead>
-                    <tfoot>
-                        <tr>
-                            <th>Number</th>
-                            <th>Sell Amt</th>
-                            <th>Demand Amt</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </tfoot>
-                    <tbody>
-                        @foreach ($numbers as $number)
-                            <tr>
-                                <td>{{$number->number}}</td>
-                                <td>{{$number->sell}}</td>
-                                <td>{{$number->demand}}</td>
-                                <td>
-                                    @if ($number->disable == 1)
-                                        <span style="color:red">Disable</span>
-                                    @else
-                                        <span style="color:green">Active</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($number->disable == 1)
-                                         <a class="btn btn-success action-button"href="#" data-toggle="modal" data-target="#activate-modal-{{$number->id}}"> Activate</a>
-                                    @else
-                                        <a class="btn btn-warning action-button"href="#" data-toggle="modal" data-target="#disable-modal-{{$number->id}}"> Disable</a>
-                                    @endif
+                            <td>{{$number->number}}</td>
+                            <td>{{$number->sell}}</td>
+                            <td>{{$number->demand}}</td>
+                            <td>
+                                @if ($number->disable == 1)
+                                    <span style="color:red">Disable</span>
+                                @else
+                                    <span style="color:green">Active</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($number->disable == 1)
+                                        <a class="btn btn-success action-button"href="#" data-toggle="modal" data-target="#activate-modal-{{$number->id}}"> Activate</a>
+                                @else
+                                    <a class="btn btn-warning action-button"href="#" data-toggle="modal" data-target="#disable-modal-{{$number->id}}"> Disable</a>
+                                @endif
 
-                                    <a class="btn btn-primary action-button"href="{{route('admin.numbers.edit',$number->id)}}"> Edit</a>
+                                <a class="btn btn-primary action-button"href="{{route('admin.numbers.edit',$number->id)}}"> Edit</a>
 
-                                    <div class="modal fade" id="activate-modal-{{$number->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="">Activate Lottery Number</h5>
-                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">×</span>
-                                                    </button>
-                                                </div>
-                                                <div class="alert alert-warning">
-                                                    Do you really want to activate this number?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                    <form action="{{route('admin.numbers.activate',$number->id)}}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button class="btn btn-primary">Activate</button>
-                                                    </form>
-                                                </div>
+                                <div class="modal fade" id="activate-modal-{{$number->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="">Activate Lottery Number</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">×</span>
+                                                </button>
+                                            </div>
+                                            <div class="alert alert-warning">
+                                                Do you really want to activate this number?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                <form action="{{route('admin.numbers.activate',$number->id)}}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <button class="btn btn-primary">Activate</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div class="modal fade" id="disable-modal-{{$number->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="">Disable Lottery Number</h5>
-                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">×</span>
-                                                    </button>
-                                                </div>
-                                                <div class="alert alert-warning">
-                                                    Do you really want to disable this number?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                    <form action="{{route('admin.numbers.disable',$number->id)}}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button class="btn btn-danger">Disable</button>
-                                                    </form>
-                                                </div>
+                                <div class="modal fade" id="disable-modal-{{$number->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="">Disable Lottery Number</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">×</span>
+                                                </button>
+                                            </div>
+                                            <div class="alert alert-warning">
+                                                Do you really want to disable this number?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                <form action="{{route('admin.numbers.disable',$number->id)}}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <button class="btn btn-danger">Disable</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
-                                   
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                                
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
     </div>
 @endsection

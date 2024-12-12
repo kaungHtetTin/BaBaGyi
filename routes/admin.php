@@ -57,6 +57,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/bankings',[BankingController::class,'index'])->name('admin.bankings');
         Route::get('/lottery-types',[LotteryTypeController::class,'index'])->name('admin.lottery-types');
+        Route::get('/lottery-types/{id}/edit',[LotteryTypeController::class,'edit'])->name('admin.lottery-types.edit');
+        Route::PUT('/lottery-types/{id}',[LotteryTypeController::class,'update'])->name('admin.lottery-types.update');
 
         Route::get('/chatrooms',[ConversationController::class,'index'])->name('admin.chatrooms');
 
