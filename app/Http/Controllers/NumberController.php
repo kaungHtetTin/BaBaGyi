@@ -28,6 +28,25 @@ class NumberController extends Controller
 
     }
 
+    public function report(Request $req){
+        $lottery_type_id = $req->lottery_type_id;
+        $clock_id = $req->clock_id;
+        $lottery_type = LotteryType::find($lottery_type_id);
+        $clock = Clock::find($clock_id);
+
+        $numbers = Number::where('lottery_type_id',$lottery_type_id)
+        ->where('clock_id',$clock_id)
+        ->where('demand','>',0)
+        ->get();
+
+        return view('admin.reports',[
+            'numbers' => $numbers,
+            'lottery_type'=>$lottery_type,
+            'clock'=>$clock,
+            'page_name'  => 'Reports',
+        ]);
+    }
+
     public function edit($id){
         $number = Number::find($id);
 

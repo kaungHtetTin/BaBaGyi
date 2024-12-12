@@ -100,6 +100,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/numbers/disable-all',[NumberController::class,'disableAll'])->name('admin.numbers.disable-all');
         Route::put('/numbers/reset-sell',[NumberController::class,'resetSellAmount'])->name('admin.numbers.reset-sell');
         Route::get('/numbers',[NumberController::class,'index'])->name('admin.numbers');
+        Route::get('/numbers/reports',[NumberController::class,'report'])->name('admin.numbers.report');
         Route::put('/numbers/{id}/disble',[NumberController::class,'disable'])->name('admin.numbers.disable');
         Route::put('/numbers/{id}/activate',[NumberController::class,'activate'])->name('admin.numbers.activate');
         Route::get('/numbers/{id}/edit',[NumberController::class,'edit'])->name('admin.numbers.edit');
