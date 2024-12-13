@@ -1,3 +1,6 @@
+@php
+    use App\Models\LotteryType;
+@endphp
 @extends('admin.master')
 @section('content')
     <style>
@@ -13,8 +16,8 @@
 
         <!-- Content Row -->
         <div class="row">
-
-            <div class="col-xl-3 col-md-6 mb-4">
+            <!-- Transaction Requests -->
+            <div class="col-xl-6 col-md-6 mb-4">
                 <a href="{{route('admin.transactions')}}" style="text-decoration: none">
                     <div class="card border-left-warning shadow h-100 py-2">
                         <div class="card-body">
@@ -32,8 +35,8 @@
                     </div>
                 </a>
             </div>
-            <!-- Pending Requests Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
+            <!-- Withdraw Request -->
+            <div class="col-xl-6 col-md-6 mb-4">
                 <a href="{{route('admin.withdraws')}}" style="text-decoration: none">
                     <div class="card border-left-warning shadow h-100 py-2">
                         <div class="card-body">
@@ -52,8 +55,8 @@
                 </a>
             </div>
             
-            <!-- Pending Requests Card Example -->
-             <div class="col-xl-6 col-md-6 mb-4">
+            <!-- 2D Dashboard -->
+            <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card shadow h-100 py-2">
                     <div class="card-header">
                         MM 2D
@@ -111,7 +114,7 @@
                                         @foreach ($unexpected_2d_1201_numbers as $number)
                                             <tr>
                                                 <td>{{$number->number}}</td>
-                                                <td>{{$number->amount}} x80</td>
+                                                <td>{{$number->amount}} x {{LotteryType::find(2)->coefficient}}</td>
                                             </tr>
                                         @endforeach
                                     </table>
@@ -125,7 +128,7 @@
                                         @foreach ($unexpected_2d_1630_numbers as $number)
                                             <tr>
                                                 <td>{{$number->number}}</td>
-                                                <td>{{$number->amount}} x80</td>
+                                                <td>{{$number->amount}} x {{LotteryType::find(2)->coefficient}}</td>
                                             </tr>
                                         @endforeach
                                     </table>
@@ -137,7 +140,9 @@
                     </div>
                 </div>
             </div>
-             <div class="col-xl-6 col-md-6 mb-4">
+
+            <!-- 3D Dashboard -->
+            <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card shadow h-100 py-2">
                     <div class="card-header">
                         MM 3D
@@ -195,7 +200,7 @@
                                         @foreach ($unexpected_3d_1_numbers as $number)
                                             <tr>
                                                 <td>{{$number->number}}</td>
-                                                <td>{{$number->amount}} x500</td>
+                                                <td>{{$number->amount}} x {{LotteryType::find(3)->coefficient}}</td>
                                             </tr>
                                         @endforeach
                                     </table>
@@ -209,7 +214,7 @@
                                         @foreach ($unexpected_3d_16_numbers as $number)
                                             <tr>
                                                 <td>{{$number->number}}</td>
-                                                <td>{{$number->amount}} x500</td>
+                                                <td>{{$number->amount}} x {{LotteryType::find(3)->coefficient}}</td>
                                             </tr>
                                         @endforeach
                                     </table>
@@ -221,9 +226,8 @@
                 </div>
             </div>
 
-
-            <!-- Earnings (Monthly) Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
+            <!-- Total User -->
+            <div class="col-xl-6 col-md-6 mb-4">
                 <a href="{{route('admin.users')}}" style="text-decoration: none">
                     <div class="card border-left-primary shadow h-100 py-2">
                         <div class="card-body">
@@ -242,8 +246,8 @@
                 </a>
             </div>
 
-            <!-- Earnings (Monthly) Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
+            <!-- Total Balance -->
+            <div class="col-xl-6 col-md-6 mb-4">
                 <a href="{{route('admin.users')}}?sort=balance" style="text-decoration: none">
                     <div class="card border-left-info shadow h-100 py-2">
                         <div class="card-body">

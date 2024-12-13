@@ -21,10 +21,24 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">{{$title}}</h1>
         </div>
+        <div class="row">
+            <div class="col-6">
+                <div class="alert alert-info">
+                    Earning  - <strong>{{$earning_today}}</strong>
+                </div>
+            </div>
 
-         <div>
+            <div class="col-6">
+                <div class="alert alert-warning">
+                    Give Back  - <strong>{{$give_Back_today}}</strong>
+                </div>
+            </div>
+
+        </div>
+        
+        <div>
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Date</th>

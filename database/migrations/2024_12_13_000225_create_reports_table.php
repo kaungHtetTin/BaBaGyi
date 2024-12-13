@@ -13,21 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('numbers', function (Blueprint $table) {
+        Schema::create('reports', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('clock_id');
             $table->unsignedBigInteger('lottery_type_id');
-            $table->string('number');
-            $table->integer('sell');
-            $table->integer('demand');
-            $table->integer('report');
-            $table->boolean('disable')->default(false);
             $table->timestamps();
 
-            $table->index('number');
+            $table->index('lottery_type_id');
             $table->index('clock_id');
             $table->foreign('clock_id')->references('id')->on('clocks')->onDelete('cascade');
             $table->foreign('lottery_type_id')->references('id')->on('lottery_types')->onDelete('cascade');
+
         });
     }
 
@@ -38,14 +34,14 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('numbers',function(Blueprint $table){
-            $table->dropIndex(['number']);
+        Schema::table('reports',function(Blueprint $table){
+            $table->dropIndex(['lottery_type_id']);
             $table->dropIndex(['clock_id']);
 
             $table->dropForeign(['clock_id']);
             $table->dropForeign(['lottery_type_id']);
         });
+        Schema::dropIfExists('reports');
 
-        Schema::dropIfExists('numbers');
     }
 };

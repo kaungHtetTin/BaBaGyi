@@ -19,6 +19,8 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AdsController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\NumberController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\HolidayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/lottery-types',[LotteryTypeController::class,'index'])->name('admin.lottery-types');
         Route::get('/lottery-types/{id}/edit',[LotteryTypeController::class,'edit'])->name('admin.lottery-types.edit');
         Route::PUT('/lottery-types/{id}',[LotteryTypeController::class,'update'])->name('admin.lottery-types.update');
+        Route::PUT('/lottery-types/{id}/change-status',[LotteryTypeController::class,'changeStatus'])->name('admin.lottery-types.change-status');
 
         Route::get('/chatrooms',[ConversationController::class,'index'])->name('admin.chatrooms');
 
@@ -106,12 +109,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/numbers/{id}/edit',[NumberController::class,'edit'])->name('admin.numbers.edit');
         Route::put('/numbers/{id}',[NumberController::class,'update'])->name('admin.numbers.modify');
         
+        Route::get('/reports',[ReportController::class,'index'])->name('admin.reports');
+        Route::post('/reports',[ReportController::class,'store'])->name('admin.reports.save');
+        Route::get('/reports/{id}',[ReportController::class,'show'])->name('admin.reports.detail');
+
 
         Route::post('/ad-photos',[AdsController::class, 'store'])->name('admin.ad-photo.save');
         Route::delete('/ad-photos/{id}',[AdsController::class, 'destroy'])->name('admin.ad-photo.destroy');
 
         Route::post('/notices',[NoticeController::class,'store'])->name('admin.notices.save');
         Route::delete('/notices/{id}',[NoticeController::class,'delete'])->name('admin.notices.remove');
+
+        Route::get('/holidays',[HolidayController::class,'index'])->name('admins.holidays');
     });
 });
 

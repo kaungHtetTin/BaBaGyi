@@ -28,6 +28,7 @@
         <form style="width: 70%;margin:auto" class="user mb-3" action="{{route('admin.numbers.modify',$number->id)}}" method="POST" >
             @csrf
             @method("PUT")
+            <span>Sell Amount</span>
             <div style="display: flex">
                 <input type="text" class="form-control" placeholder="Sell amount" name="sell" style="display:inline" value="{{$number->sell}}">
                 <button class="btn btn-primary" style="margin-left:5px;">Update</button>

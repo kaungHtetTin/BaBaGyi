@@ -23,8 +23,6 @@
         <!-- Page Heading -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">{{$lottery_type->type}} {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}</h1>
-            <a href="{{route('admin.numbers.report')}}?lottery_type_id={{$lottery_type->id}}&clock_id={{$clock->id}}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                    class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
         </div>
 
         <div class="row">
@@ -69,12 +67,13 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                     <tr>
                         <th>Number</th>
                         <th>Sell Amt</th>
                         <th>Demand Amt</th>
+                        <th>Report Amt</th>
                         <th>Status</th>
                         <th>Action</th>
                         
@@ -85,6 +84,7 @@
                         <th>Number</th>
                         <th>Sell Amt</th>
                         <th>Demand Amt</th>
+                        <th>Report Amt</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -95,6 +95,7 @@
                             <td>{{$number->number}}</td>
                             <td>{{$number->sell}}</td>
                             <td>{{$number->demand}}</td>
+                            <td>{{$number->report}}</td>
                             <td>
                                 @if ($number->disable == 1)
                                     <span style="color:red">Disable</span>

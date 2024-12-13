@@ -39,7 +39,7 @@ class NumberController extends Controller
         ->where('demand','>',0)
         ->get();
 
-        return view('admin.reports',[
+        return view('admin.report-table',[
             'numbers' => $numbers,
             'lottery_type'=>$lottery_type,
             'clock'=>$clock,

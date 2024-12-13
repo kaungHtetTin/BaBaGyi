@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Clock;
 use App\Models\WalletHistory;
 use App\Models\Number;
+use App\Models\LotteryType;
 
 class VoucherController extends Controller
 {
@@ -37,6 +38,7 @@ class VoucherController extends Controller
         }
 
         $Clock = Clock::find($clock_id);
+        $lottery_type = LotteryType::find($lottery_type_id);
 
         $currentYear = date('Y');
         $currentMonth = date('m');
@@ -50,7 +52,6 @@ class VoucherController extends Controller
             $hour = $hour+12;
         }
         if($lottery_type_id == 3){
-            $hour = 13;
             if($currentDay > 16){
                 $currentDay = 1;
                 $currentMonth++;
@@ -67,8 +68,9 @@ class VoucherController extends Controller
         $selectedTimestamp = mktime($hour,$minute,0,$currentMonth,$currentDay,$currentYear);
         $currentTimestamp = time();
 
-        //if($currentTimestamp < $selectedTimestamp - 60*30){
         $error_numbers = [];
+       // if($currentTimestamp < $selectedTimestamp - 60*$lottery_type->close_before){
+        
         if(true){
             foreach($lottery_numbers as $number){
                 $lottery_num_id = $number['id'];
@@ -101,6 +103,7 @@ class VoucherController extends Controller
                     $wallet->save();
 
                     $Number->demand = $Number->demand + $amount;
+                    $Number->report = $Number->report + $amount;
                     $Number->save();
 
                 }else{

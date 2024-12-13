@@ -28,11 +28,26 @@ class LotteryTypeController extends Controller
         $lottery_type = LotteryType::find($id);
         $req->validate([
             'multiplication'=>'required',
+            'close_before'=>'required',
         ]);
 
         $lottery_type->coefficient = $req->multiplication;
+        $lottery_type->close_before = $req->close_before;
         $lottery_type->save();
 
-        return back()->with('msg','The multification was successfully updated');
+        return back()->with('msg','The lottery was successfully updated');
+    }
+
+    public function changeStatus(Request $req, $id){
+        $lottery_type = LotteryType::find($id);
+        $req->validate([
+            'open'=>'required',
+        ]);
+
+        $lottery_type->open = $req->open;
+        $lottery_type->save();
+
+        return back()->with('msg','The lottery was successfully updated');
+
     }
 }

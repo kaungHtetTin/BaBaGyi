@@ -53,8 +53,8 @@
         <br><br>
         <h5>Vouchers</h5>
         @if (count($vouchers)>0)
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <div class="table-responsive ">
+                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Date</th>

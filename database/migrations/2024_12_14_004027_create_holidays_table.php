@@ -13,13 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('lottery_types', function (Blueprint $table) {
+        Schema::create('holidays', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
-            $table->integer('coefficient')->default(1);
-            $table->integer('close_before')->default(30);
-            $table->boolean('open')->default(true);
-            $table->text('api_url')->nullable();
+            $table->string('title');
+            $table->integer('month');
+            $table->integer('day');
             $table->timestamps();
         });
     }
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('lottery_types');
+        Schema::dropIfExists('holidays');
     }
 };

@@ -15,6 +15,7 @@ use App\Models\LotteryClock;
 use App\Models\Avatar;
 use App\Models\Banking;
 use App\Models\Number;
+use App\Models\Holiday;
 
 use Illuminate\Support\Str;
 
@@ -30,7 +31,7 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'name' => 'Super Admin',
-            'email' => 'super@babagyi.com',
+            'email' => 'super@babagyi.org',
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
@@ -87,18 +88,24 @@ class DatabaseSeeder extends Seeder
         LotteryType::create([
             'type'=>'BTC 2D',
             'coefficient'=>90,
+            'close_before'=>30,
+            'open'=>1,
             'api_url'=>"",
         ]);
 
         LotteryType::create([
             'type'=>'Thai 2D',
             'coefficient'=>90,
+            'close_before'=>30,
+            'open'=>1,
             'api_url'=>"",
         ]);
 
         LotteryType::create([
             'type'=>'Thai 3D',
             'coefficient'=>500,
+            'close_before'=>180,
+            'open'=>1,
             'api_url'=>"",
         ]);
 
@@ -130,6 +137,7 @@ class DatabaseSeeder extends Seeder
                     'sell'=> 1000000,
                     'disable'=>0,
                     'demand'=>0,
+                    'report'=>0,
                 ]);
 
             }
@@ -145,6 +153,7 @@ class DatabaseSeeder extends Seeder
                     'sell'=> 1000000,
                     'demand'=>0,
                     'disable'=>0,
+                    'report'=>0,
                 ]);
             }
         }
@@ -160,68 +169,20 @@ class DatabaseSeeder extends Seeder
                         'sell'=> 100000,
                         'demand'=>0,
                         'disable'=>0,
+                        'report'=>0,
                     ]);
                 }
             }
         }
 
-        
-        for($j = 0;$j<31;$j++){
-            $day = $j+1;
-            // for($i = 1; $i<5 ;$i++){
-            //     Lottery::create([
-            //         'lottery_type_id' => 1,
-            //         'clock_id' => $i,
-            //         'number' => rand(10,99),
-            //         'created_at' =>"2024-09-$day 14:43:56",
-            //         'updated_at' =>"2024-09-$day 14:43:56",
-            //     ]);
-            // }
-
-            // for($i = 1; $i<5 ;$i++){
-            //     if($i == 2 || $i == 4){
-            //         Lottery::create([
-            //             'lottery_type_id' => 2,
-            //             'clock_id' => $i,
-            //             'number' => rand(10,99),
-            //             'created_at' =>"2024-11-$day 14:43:56",
-            //             'updated_at' =>"2024-11-$day 14:43:56",
-            //         ]);
-            //     }
-            // }
-
-            // if($j == 0 || $j == 14){
-            //     Lottery::create([
-            //         'lottery_type_id' => 3,
-            //         'clock_id' => 4,
-            //         'number' => rand(100,999),
-            //         'created_at' =>"2024-09-$day 14:43:56",
-            //         'updated_at' =>"2024-09-$day 14:43:56",
-            //     ]);
-            // }
-        }
-
-        //  for($i = 1; $i<9 ;$i++){
-        //         Lottery::create([
-        //             'lottery_type_id' => 3,
-        //             'clock_id' => 4,
-        //             'number' => rand(100,999),
-        //             'created_at' =>"2024-$i-1 14:43:56",
-        //             'updated_at' =>"2024-$i-1 14:43:56",
-        //         ]);
-
-        //         Lottery::create([
-        //             'lottery_type_id' => 3,
-        //             'clock_id' => 4,
-        //             'number' => rand(100,999),
-        //             'created_at' =>"2024-$i-15 14:43:56",
-        //             'updated_at' =>"2024-$i-14 14:43:56",
-        //         ]);
-        //  }
-
-       // User::factory(100)->create();
-     //  Transaction::factory(30)->create();
-      //  Withdraw::factory(50)->create();
-      //  Voucher::factory(200)->create();
+        Holiday::create(['title'=>'Asarnha Bucha Day','month'=>7,'day'=>26]);
+        Holiday::create(['title'=>"King's Birthday",'month'=>7,'day'=>28]);
+        Holiday::create(['title'=>"Mother's Day",'month'=>8,'day'=>12]);
+        Holiday::create(['title'=>'Special Day','month'=>9,'day'=>24]);
+        Holiday::create(['title'=>"Great Memorial Day",'month'=>10,'day'=>13]);
+        Holiday::create(['title'=>"Chulalongkorn Day",'month'=>10,'day'=>22]);
+        Holiday::create(['title'=>"National Day",'month'=>12,'day'=>6]);
+        Holiday::create(['title'=>"Constitution Day",'month'=>12,'day'=>10]);
+        Holiday::create(['title'=>"New Year's Eve",'month'=>12,'day'=>31]);
     }
 }

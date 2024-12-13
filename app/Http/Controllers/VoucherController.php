@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Voucher;
 use App\Models\LotteryHistory;
+use App\Models\LotteryType;
 use App\Models\WalletHistory;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 
 class VoucherController extends Controller
@@ -34,31 +36,82 @@ class VoucherController extends Controller
     }
 
     public function voucher_2d(){
+        $lottery_type_id = 2;
         $vouchers = Voucher::with('user:id,name,email,phone,balance')
          ->where('user_id','!=',2)
-        ->where('lottery_type_id',2)
+        ->where('lottery_type_id',$lottery_type_id)
         ->orderBy('verified','asc')
         ->orderBy('created_at','desc')
         ->paginate(100);
+
+        $earning_today = Voucher::where(DB::raw("YEAR(created_at)"),date('Y'))
+        ->where(DB::raw("MONTH(created_at)"),date('m'))
+        ->where(DB::raw("DAY(created_at)"),date('d'))
+        ->where('lottery_type_id',$lottery_type_id)
+        ->sum('amount');
+
+        $give_Back_today = Voucher::where(DB::raw("YEAR(created_at)"),date('Y'))
+        ->where(DB::raw("MONTH(created_at)"),date('m'))
+        ->where(DB::raw("DAY(created_at)"),date('d'))
+        ->where('lottery_type_id',$lottery_type_id)
+        ->where('win',1)
+        ->sum('amount');
+
+        $give_Back_today = $give_Back_today * LotteryType::find($lottery_type_id)->coefficient;
 
         return view('admin.vouchers',[
             'page_name'=>'Vouchers',
             'title'=>'Thai 2D Vouchers',
             'vouchers'=>$vouchers,
+            'earning_today'=>$earning_today,
+            'give_Back_today'=>$give_Back_today,
         ]);
     }
 
     public function voucher_3d(){
+         $lottery_type_id = 3;
+
         $vouchers = Voucher::with('user:id,name,email,phone,balance')
         ->where('user_id','!=',2)
         ->where('lottery_type_id',3)
         ->orderBy('verified','asc')
         ->paginate(100);
 
+        $day = date('d');
+        $year = date('Y');
+        $month = date('m');
+        if($day<=16){
+            $day = 16;
+        }else{
+            $day = 1;
+            $month++;
+            if($month>12){
+                $month = 1;
+                $year++;
+            }
+        }
+
+        $earning_today = Voucher::where(DB::raw("YEAR(created_at)"),$year)
+        ->where(DB::raw("MONTH(created_at)"),$month)
+        ->where(DB::raw("DAY(created_at)"),$day)
+        ->where('lottery_type_id',$lottery_type_id)
+        ->sum('amount');
+
+        $give_Back_today = Voucher::where(DB::raw("YEAR(created_at)"),$year)
+        ->where(DB::raw("MONTH(created_at)"),$month)
+        ->where(DB::raw("DAY(created_at)"),$day)
+        ->where('lottery_type_id',$lottery_type_id)
+        ->where('win',1)
+        ->sum('amount');
+
+        $give_Back_today = $give_Back_today * LotteryType::find($lottery_type_id)->coefficient;
+
         return view('admin.vouchers',[
             'page_name'=>'Vouchers',
             'title'=>'Thai 3D Vouchers',
             'vouchers'=>$vouchers,
+            'earning_today'=>$earning_today,
+            'give_Back_today'=>$give_Back_today,
         ]);
     }
 
