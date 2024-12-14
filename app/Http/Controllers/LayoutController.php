@@ -22,21 +22,16 @@ class LayoutController extends Controller
         $transaction_req = Transaction::where('verified',0)->count();
         $withdraw_req = Withdraw::where('verified',0)->count();
 
-        $transactionOfYear = DB::table('transactions')
+        $saleOfYear = DB::table('vouchers')
         ->selectRaw(DB::raw("sum(amount) as amount, MONTH(created_at) as month"))
         ->where(DB::raw("YEAR(created_at)"),$year)
         ->groupBy("month")
         ->get();
 
-        $withdrawOfYear = DB::table('withdraws')
-        ->selectRaw(DB::raw("sum(amount) as amount, MONTH(created_at) as month"))
+        $lossOfYear = DB::table('vouchers')
+        ->selectRaw(DB::raw("sum(win_amount) as amount, MONTH(created_at) as month"))
         ->where(DB::raw("YEAR(created_at)"),$year)
-        ->groupBy("month")
-        ->get();
-
-        $balanceOfYear = DB::table('users')
-        ->selectRaw(DB::raw("sum(balance) as amount, MONTH(created_at) as month"))
-        ->where(DB::raw("YEAR(created_at)"),$year)
+        ->where('win',1)
         ->groupBy("month")
         ->get();
 
@@ -123,9 +118,6 @@ class LayoutController extends Controller
             'total_withdraw'=>$total_withdraw,
             'transaction_req'=>$transaction_req,
             'withdraw_req'=>$withdraw_req,
-            'transactionOfYear'=>$transactionOfYear,
-            'withdrawOfYear'=>$withdrawOfYear,
-            'balanceOfYear'=>$balanceOfYear,
             'unexpected_2d_1201_numbers'=>$unexpected_2d_1201_numbers,
             'unexpected_2d_1630_numbers'=>$unexpected_2d_1630_numbers,
             'unexpected_3d_1_numbers'=>$unexpected_3d_1_numbers,
@@ -133,8 +125,9 @@ class LayoutController extends Controller
             'earning_2d_1201'=>$earning_2d_1201,
             'earning_2d_1630'=>$earning_2d_1630,
             'earning_3d_1'=>$earning_3d_1,
-            'earning_3d_16'=>$earning_3d_16
-
+            'earning_3d_16'=>$earning_3d_16,
+            'saleOfYear'=>$saleOfYear,
+            'lossOfYear'=>$lossOfYear,
         ]);
     }
 }

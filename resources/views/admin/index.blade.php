@@ -24,7 +24,7 @@
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
                                     <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Transaction Requests</div>
+                                        Top Up Requests</div>
                                     <div id="trx_count" class="h5 mb-0 font-weight-bold text-danger">{{$transaction_req}}</div>
                                 </div>
                                 <div class="col-auto">
@@ -87,7 +87,7 @@
                         </div>
 
                         <div style="padding:10px; background:rgb(229, 255, 231);border-radius:7px;margin-top:10px;">
-                            <h6>Earning</h6>
+                            <h6>Lottery Sale</h6>
                             <hr>
                             <table width="100%">
                                 <tr>
@@ -173,7 +173,7 @@
                         </div>
 
                         <div style="padding:10px; background:rgb(229, 255, 231);border-radius:7px;margin-top:10px;">
-                            <h6>Earning</h6>
+                            <h6>Lottery Sale</h6>
                             <hr>
                             <table width="100%">
                                 <tr>
@@ -276,7 +276,7 @@
                     <!-- Card Header - Dropdown -->
                     <div
                         class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">Monthly Profit</h6>
                         <div class="dropdown no-arrow">
                             <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -291,7 +291,6 @@
                                 @for ($i = $year; $i >=2024; $i--)
                                     <a class="dropdown-item" href="?year={{$i}}">{{$i}}</a>
                                 @endfor
-                                
                             </div>
                         </div>
                     </div>
@@ -328,7 +327,7 @@
                             }
 
                         @endphp
-                        <h4 class="small font-weight-bold">Total Transactions <span
+                        <h4 class="small font-weight-bold">Total Top Up <span
                                 class="float-right">{{$total_transaction}} mmk</span></h4>
                         <div class="progress mb-4">
                             <div class="progress-bar bg-warning" role="progressbar" style="width: {{$per_trx}}%"
@@ -450,44 +449,36 @@
     </script>
 
     <script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
+
     <script>
 
-        let transactionOfYear = @json($transactionOfYear);
-        let withdrawOfYear = @json($withdrawOfYear);
-        let balanceOfYear = @json($balanceOfYear);
+        let saleOfYear = @json($saleOfYear);
+        let lossOfYear = @json($lossOfYear);
         // Set new default font family and font color to mimic Bootstrap's default styling
         Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
         Chart.defaults.global.defaultFontColor = '#858796';
 
-        var dataTrx=[];
-        var dataWdr=[];
-        var dataBal=[];
+        var dataSale=[];
+        var dataLoss=[];
         var dataEar=[];
 
         for(var i=0;i<12;i++){
             var month=i+1;
-            var trx=transactionOfYear.filter(element => element.month==month);
+            var trx=saleOfYear.filter(element => element.month==month);
             if(trx.length>0){
-                dataTrx[i]=trx[0].amount;
+                dataSale[i]=trx[0].amount;
             }else{
-                dataTrx[i]=0;
+                dataSale[i]=0;
             }
-
-            var bal=balanceOfYear.filter(element => element.month==month);
-            if(bal.length>0){
-                dataBal[i]=bal[0].amount;
-            }else{
-                dataBal[i]=0;
-            }
-
-            var wdr=withdrawOfYear.filter(element => element.month==month);
+            
+            var wdr=lossOfYear.filter(element => element.month==month);
             if(wdr.length>0){
-                dataWdr[i]=wdr[0].amount;
+                dataLoss[i]=wdr[0].amount;
             }else{
-                dataWdr[i]=0;
+                dataLoss[i]=0;
             }
 
-            dataEar[i] = dataTrx[i]  - dataWdr[i] - dataBal[i];
+            dataEar[i] = dataSale[i]  - dataLoss[i];
             
         }
 
@@ -524,49 +515,34 @@
                 labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
                 datasets: [
                     {
-                        label: "Transactions",
+                        label: "Sale",
                         lineTension: 0.3,
-                        backgroundColor: "#f6c23e10",
-                        borderColor: "#f6c23e",
+                        backgroundColor: "#4e73df10",
+                        borderColor: "#4e73df",
                         pointRadius: 3,
-                        pointBackgroundColor: "#f6c23e",
-                        pointBorderColor: "#f6c23e",
+                        pointBackgroundColor: "#4e73df",
+                        pointBorderColor: "#4e73df",
                         pointHoverRadius: 3,
-                        pointHoverBackgroundColor: "#f6c23e",
-                        pointHoverBorderColor: "#f6c23e",
+                        pointHoverBackgroundColor: "#4e73df",
+                        pointHoverBorderColor: "#4e73df",
                         pointHitRadius: 10,
                         pointBorderWidth: 2,
-                        data: dataTrx,
+                        data: dataSale,
                     },
                     {
-                        label: "Balance",
+                        label: "Win",
                         lineTension: 0.3,
-                        backgroundColor: "#36b9cc10",
-                        borderColor: "#36b9cc",
+                        backgroundColor: "#e74a3b10",
+                        borderColor: "#e74a3b",
                         pointRadius: 3,
-                        pointBackgroundColor: "#36b9cc",
-                        pointBorderColor: "#36b9cc",
+                        pointBackgroundColor: "#e74a3b",
+                        pointBorderColor: "#e74a3b",
                         pointHoverRadius: 3,
-                        pointHoverBackgroundColor: "#36b9cc",
-                        pointHoverBorderColor: "#36b9cc",
+                        pointHoverBackgroundColor: "#e74a3b",
+                        pointHoverBorderColor: "#e74a3b",
                         pointHitRadius: 10,
                         pointBorderWidth: 2,
-                        data: dataBal,
-                    },
-                    {
-                        label: "Withdraw",
-                        lineTension: 0.3,
-                        backgroundColor: "#DB8C2C10",
-                        borderColor: "#DB8C2C",
-                        pointRadius: 3,
-                        pointBackgroundColor: "#DB8C2C",
-                        pointBorderColor: "#DB8C2C",
-                        pointHoverRadius: 3,
-                        pointHoverBackgroundColor: "#DB8C2C",
-                        pointHoverBorderColor: "#DB8C2C",
-                        pointHitRadius: 10,
-                        pointBorderWidth: 2,
-                        data: dataWdr,
+                        data: dataLoss,
                     },
                     {
                         label: "Earning",
@@ -654,4 +630,5 @@
         });
 
     </script>
+
 @endsection

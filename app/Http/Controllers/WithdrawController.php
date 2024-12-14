@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Withdraw;
 use App\Models\WalletHistory;
 
@@ -15,9 +16,15 @@ class WithdrawController extends Controller
         ->orderBy('verified','asc')
         ->paginate(100);
 
+        $amount_today = Withdraw::where(DB::raw("YEAR(created_at)"),date('Y'))
+        ->where(DB::raw("MONTH(created_at)"),date('m'))
+        ->where(DB::raw("DAY(created_at)"),date('d'))
+        ->sum('amount');
+
         return view('admin.withdraws',[
             'page_name'=>'Financial',
             'withdraws'=>$withdraws,
+            'amount_today'=>$amount_today,
         ]);
          
     }

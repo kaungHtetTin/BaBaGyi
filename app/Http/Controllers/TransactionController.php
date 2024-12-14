@@ -18,9 +18,15 @@ class TransactionController extends Controller
         ->orderBy('verified','asc')
         ->paginate(100);
 
+        $amount_today = Transaction::where(DB::raw("YEAR(created_at)"),date('Y'))
+        ->where(DB::raw("MONTH(created_at)"),date('m'))
+        ->where(DB::raw("DAY(created_at)"),date('d'))
+        ->sum('amount');
+
         return view('admin.transactions',[
             'page_name' => 'Financial',
             'transactions'=>$transactions,
+            'amount_today'=>$amount_today,
         ]);
     }
 

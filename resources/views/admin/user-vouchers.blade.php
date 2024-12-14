@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <a href="{{route('admin.users.transactions',$user->id)}}" class="btn btn-secondary my-btn">Transactions</a>
+        <a href="{{route('admin.users.transactions',$user->id)}}" class="btn btn-secondary my-btn">Top Up</a>
         <a href="{{route('admin.users.withdraws',$user->id)}}" class="btn btn-secondary my-btn">Withdraws</a>
         <a href="{{route('admin.users.vouchers',$user->id)}}" class="btn btn-primary my-btn">Vouchers</a>
         <a href="{{route('admin.users.wallet-histories',$user->id)}}" class="btn btn-secondary my-btn">Wallet Histories</a>

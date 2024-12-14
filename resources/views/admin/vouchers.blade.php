@@ -24,13 +24,13 @@
         <div class="row">
             <div class="col-6">
                 <div class="alert alert-info">
-                    Earning  - <strong>{{$earning_today}}</strong>
+                    Lottery Sale  - <strong>{{$earning_today}}</strong>
                 </div>
             </div>
 
             <div class="col-6">
                 <div class="alert alert-warning">
-                    Give Back  - <strong>{{$give_Back_today}}</strong>
+                    Lottery Win  - <strong>{{$give_Back_today}}</strong>
                 </div>
             </div>
 

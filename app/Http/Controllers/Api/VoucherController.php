@@ -87,6 +87,7 @@ class VoucherController extends Controller
                     $voucher->number = $lotteryNum;
                     $voucher->amount = $amount;
                     $voucher->win = 0;
+                    $voucher->win_amount = 0;
                     $voucher->verified = 0;
                     $voucher->verified_by = 0;
                     if($lottery_type_id == 3) $voucher->created_at = "$currentYear-$currentMonth-$currentDay";

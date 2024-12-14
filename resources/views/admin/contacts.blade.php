@@ -259,7 +259,7 @@
                     <div class="form-group">
                         <input type="text" class="form-control form-control-user"
                             id="" aria-describedby="emailHelp"
-                            placeholder="Enter phone no or link" name="content">
+                            placeholder="Promotion plan or something like that" name="content">
                             <p class="my-error">{{$errors->first('content')}}</p>
                     </div>
 

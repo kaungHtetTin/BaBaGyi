@@ -36,8 +36,8 @@
         <div id="collapseFinancial" class="collapse" aria-labelledby="headingUtilities"
             data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Utilities:</h6>
-                <a class="collapse-item" href="{{route('admin.transactions')}}">Transactions</a>
+                <h6 class="collapse-header">Financial:</h6>
+                <a class="collapse-item" href="{{route('admin.transactions')}}">Top Up</a>
                 <a class="collapse-item" href="{{route('admin.withdraws')}}">Withdraw</a>
             </div>
         </div>

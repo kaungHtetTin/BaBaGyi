@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('number');
             $table->integer('amount')->default(0);
             $table->boolean('win')->default(0);
+            $table->integer('win_amount')->default(0);
             $table->unsignedBigInteger('verified_by')->nullable();
             $table->boolean('verified')->default(0);
             

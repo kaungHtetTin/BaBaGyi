@@ -55,9 +55,7 @@ class VoucherController extends Controller
         ->where(DB::raw("DAY(created_at)"),date('d'))
         ->where('lottery_type_id',$lottery_type_id)
         ->where('win',1)
-        ->sum('amount');
-
-        $give_Back_today = $give_Back_today * LotteryType::find($lottery_type_id)->coefficient;
+        ->sum('win_amount');
 
         return view('admin.vouchers',[
             'page_name'=>'Vouchers',
@@ -102,9 +100,7 @@ class VoucherController extends Controller
         ->where(DB::raw("DAY(created_at)"),$day)
         ->where('lottery_type_id',$lottery_type_id)
         ->where('win',1)
-        ->sum('amount');
-
-        $give_Back_today = $give_Back_today * LotteryType::find($lottery_type_id)->coefficient;
+        ->sum('win_amount');
 
         return view('admin.vouchers',[
             'page_name'=>'Vouchers',
@@ -135,6 +131,7 @@ class VoucherController extends Controller
 
         $voucher->verified = 1;
         $voucher->verified_by = Auth::user()->id;
+        $voucher->win_amount = $voucher->amount * $coefficient;
         $voucher->save();
     
         return back()->with('msg','The voucher was successfully approved');
