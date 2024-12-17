@@ -23,7 +23,8 @@
                     <tr>
                         <th>Lottery Type</th>
                         <th>Multiplication</th>
-                        <th>Close Before(Minute)</th>
+                        <th>Clock</th>
+                        <th>Close Before (Minute)</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -32,35 +33,44 @@
                     <tr>
                         <th>Lottery Type</th>
                         <th>Multiplication</th>
-                        <th>Close Before(Minute)</th>
+                        <th>Clock</th>
+                        <th>Close Before (Minute)</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </tfoot>
                 <tbody>
-                    @foreach ($lottery_types as $type)
+                    @foreach ($lotteries as $lottery)
+                        @php
+                            $clock = $lottery->clock;
+                            $lottery_hour = $clock->hour<9 ? "0".$clock->hour: $clock->hour;
+                            $lottery_minute = $clock->minute<9 ? "0".$clock->minute: $clock->minute;
+                        @endphp
                         <tr>
-                            <td> {{$type->type}} </td>
-                            <td>{{$type->coefficient}}</td>
-                            <td>{{$type->close_before}}</td>
+                            <td> {{$lottery->lottery_type->type}} </td>
+                            <td>{{$lottery->lottery_type->coefficient}}</td>
                             <td>
-                                @if ($type->open == 1)
+                                {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}
+                            </td>
+                            <td>{{$lottery->close_before}}</td>
+                            <td>
+                                @if ($lottery->lottery_type->open == 1)
                                     <strong class="text-success">Open</strong>
                                 @else
                                     <strong class="text-danger">Close</strong>
                                 @endif
                             </td>
                             <td>
-                                <a class="btn btn-primary action-button"href="{{route('admin.lottery-types.edit',$type->id)}}"> Edit</a>
-                                @if ($type->open == 1)
-                                    <a class="btn btn-danger action-button"href="#" data-toggle="modal" data-target="#close-modal-{{$type->id}}"> Close</a>
+                                <a class="btn btn-primary action-button"href="{{route('admin.lottery-types.edit',$lottery->id)}}"> Edit</a>
+                                @if ($lottery->lottery_type->open == 1)
+                                    <a class="btn btn-danger action-button"href="#" data-toggle="modal" data-target="#close-modal-{{$lottery->lottery_type->id}}"> Close</a>
                                 @else
-                                    <a class="btn btn-success action-button"href="#" data-toggle="modal" data-target="#open-modal-{{$type->id}}"> Open</a>
+                                    <a class="btn btn-success action-button"href="#" data-toggle="modal" data-target="#open-modal-{{$lottery->lottery_type->id}}"> Open</a>
                                 @endif
                             </td>
                         </tr>
 
-                        <div class="modal fade" id="open-modal-{{$type->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                        <div class="modal fade" id="open-modal-{{$lottery->lottery_type->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
@@ -75,7 +85,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                        <form action="{{route('admin.lottery-types.change-status',$type->id)}}" method="POST">
+                                        <form action="{{route('admin.lottery-types.change-status',$lottery->lottery_type->id)}}" method="POST">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="open" value="1">
@@ -86,7 +96,7 @@
                             </div>
                         </div>
 
-                        <div class="modal fade" id="close-modal-{{$type->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                        <div class="modal fade" id="close-modal-{{$lottery->lottery_type->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
@@ -101,7 +111,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                        <form action="{{route('admin.lottery-types.change-status',$type->id)}}" method="POST">
+                                        <form action="{{route('admin.lottery-types.change-status',$lottery->lottery_type->id)}}" method="POST">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="open" value="0">

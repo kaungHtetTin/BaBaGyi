@@ -10,6 +10,7 @@ use App\Models\Clock;
 use App\Models\WalletHistory;
 use App\Models\Number;
 use App\Models\LotteryType;
+use App\Models\LotteryClock;
 
 class VoucherController extends Controller
 {
@@ -21,9 +22,12 @@ class VoucherController extends Controller
             'clock_id'=>'required',
         ]);
 
+
         $numberJSON = $req->numberJSON;
         $lottery_type_id = $req->lottery_type_id;
         $clock_id = $req->clock_id;
+
+        $lottery_clock = LotteryClock::where('lottery_type_id',$lottery_type_id)->where('clock_id',$clock_id)->first();
 
         $lottery_numbers = json_decode($numberJSON,true);
         $total_amount = 0;
@@ -69,7 +73,7 @@ class VoucherController extends Controller
         $currentTimestamp = time();
 
         $error_numbers = [];
-       // if($currentTimestamp < $selectedTimestamp - 60*$lottery_type->close_before){
+       // if($currentTimestamp < $selectedTimestamp - 60*$lottery_clock->close_before){
         
         if(true){
             foreach($lottery_numbers as $number){
@@ -79,7 +83,7 @@ class VoucherController extends Controller
 
                 $Number = Number::find($lottery_num_id);
                 $allowed_amount = $Number->sell - $Number->demand;
-                if($allowed_amount > $amount && $Number->disable == 0){
+                if($allowed_amount >= $amount && $Number->disable == 0){
                     $voucher = new Voucher();
                     $voucher->user_id = $user->id;
                     $voucher->lottery_type_id = $lottery_type_id;
@@ -108,7 +112,12 @@ class VoucherController extends Controller
                     $Number->save();
 
                 }else{
-                    $error_numbers [] =  $number;
+                    $error_numbers [] =  [
+                        'id'=>$Number->id,
+                        'number'=>$Number->number,
+                        'amount'=>$amount,
+                        'allowed_amount'=>$allowed_amount,
+                    ];
                 }
             }
 

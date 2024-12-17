@@ -88,7 +88,6 @@ class DatabaseSeeder extends Seeder
         LotteryType::create([
             'type'=>'BTC 2D',
             'coefficient'=>90,
-            'close_before'=>30,
             'open'=>1,
             'api_url'=>"",
         ]);
@@ -96,7 +95,6 @@ class DatabaseSeeder extends Seeder
         LotteryType::create([
             'type'=>'Thai 2D',
             'coefficient'=>90,
-            'close_before'=>30,
             'open'=>1,
             'api_url'=>"",
         ]);
@@ -104,7 +102,6 @@ class DatabaseSeeder extends Seeder
         LotteryType::create([
             'type'=>'Thai 3D',
             'coefficient'=>500,
-            'close_before'=>180,
             'open'=>1,
             'api_url'=>"",
         ]);
@@ -114,13 +111,13 @@ class DatabaseSeeder extends Seeder
         Avatar::create(['url'=>'img/undraw_profile_2.png']);
         Avatar::create(['url'=>'img/undraw_profile_3.png']);
 
-        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>1]);
-        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>2]);
-        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>3]);
-        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>4]);
-        LotteryClock::create(['lottery_type_id'=>2,'clock_id'=>2]);
-        LotteryClock::create(['lottery_type_id'=>2,'clock_id'=>4]);
-        LotteryClock::create(['lottery_type_id'=>3,'clock_id'=>5]);
+        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>1,'close_before'=>30,]);
+        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>2,'close_before'=>30,]);
+        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>3,'close_before'=>30,]);
+        LotteryClock::create(['lottery_type_id'=>1,'clock_id'=>4,'close_before'=>30,]);
+        LotteryClock::create(['lottery_type_id'=>2,'clock_id'=>2,'close_before'=>30,]);
+        LotteryClock::create(['lottery_type_id'=>2,'clock_id'=>4,'close_before'=>30,]);
+        LotteryClock::create(['lottery_type_id'=>3,'clock_id'=>5,'close_before'=>180,]);
 
         Banking::create(['bank'=>'KBZ pay','icon_url'=>'img/payment-kbz-pay.jpg']);
         Banking::create(['bank'=>'Wave pay','icon_url'=>'img/payment-wave-pay.jpg']);

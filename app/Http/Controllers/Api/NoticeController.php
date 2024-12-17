@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Ads;
 use App\Models\Notice;
 use App\Models\LotteryType;
+use App\Models\LotteryClock;
 
 class NoticeController extends Controller
 {
@@ -20,7 +21,6 @@ class NoticeController extends Controller
             'notices'=>$notices,
             'user' => $req->user(),
             'lottery_types' => $lottery_types,
-            
         ]);
     }
 }

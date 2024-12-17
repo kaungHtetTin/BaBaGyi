@@ -391,8 +391,8 @@
                 type: 'GET',
                 success: function(res) {
                    
-                 //   res = JSON.parse(res);
-
+                    res = JSON.parse(res);
+                  
                     if(res.live){
                         let live = res.live;
                         $('#2d_status').html('Live');

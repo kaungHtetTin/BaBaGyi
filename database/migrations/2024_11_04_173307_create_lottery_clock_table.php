@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('lottery_type_id');
             $table->unsignedBigInteger('clock_id');
+            $table->integer('close_before')->default(30);
             $table->timestamps();
 
             $table->foreign('lottery_type_id')->references('id')->on('lottery_types')->onDelete('cascade');
