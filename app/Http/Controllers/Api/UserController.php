@@ -61,10 +61,45 @@ class UserController extends Controller
             'lottery_type_id'=>'required',
         ]);
 
-        $vouchers = Voucher::with('clock:id,hour,minute,morning')
-        ->where('user_id',$user->id)
-        ->where('lottery_type_id',$req->lottery_type_id)
-        ->orderBy('id','desc')->paginate(100);
+        $status = 1;
+        if($req->has('status')){
+            $status = $req->status;
+        }
+
+        if($status == 1){   // all
+            $vouchers = Voucher::with('clock:id,hour,minute,morning')
+            ->where('user_id',$user->id)
+            ->where('lottery_type_id',$req->lottery_type_id)
+            ->orderBy('id','desc')->paginate(100);
+        }
+
+        if($status == 2){ // soon
+            $vouchers = Voucher::with('clock:id,hour,minute,morning')
+            ->where('user_id',$user->id)
+            ->where('lottery_type_id',$req->lottery_type_id)
+            ->where('win',0)
+            ->where('verified',0)
+            ->orderBy('id','desc')->paginate(100);
+        }
+
+        if($status == 3){ // win
+            $vouchers = Voucher::with('clock:id,hour,minute,morning')
+            ->where('user_id',$user->id)
+            ->where('lottery_type_id',$req->lottery_type_id)
+            ->where('win',1)
+            ->orderBy('id','desc')->paginate(100);
+        }
+
+        if($status == 4){ // loose
+            $vouchers = Voucher::with('clock:id,hour,minute,morning')
+            ->where('user_id',$user->id)
+            ->where('lottery_type_id',$req->lottery_type_id)
+            ->where('win',0)
+            ->where('verified',1)
+            ->orderBy('id','desc')->paginate(100);
+        }
+
+        
         return response()->json($vouchers);
 
     }

@@ -25,8 +25,47 @@
             <h1 class="h3 mb-0 text-gray-800">{{$lottery_type->type}} {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}</h1>
         </div>
 
+        <div style="display:flex">
+            <div>
+                <form class="user mb-3" action="{{route('admin.numbers.disable-all')}}" method="POST" >
+                    @csrf
+                    @method("PUT")
+                    <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
+                    <input type="hidden" name="clock_id" value="{{$clock->id}}">
+                    <input type="hidden" name="disable" value="1">
+                    <button class="btn btn-danger action-button">Disable All</button>
+                </form>
+            </div>
+
+            <div>
+                <form class="user mb-3" action="{{route('admin.numbers.disable-all')}}" method="POST" >
+                    @csrf
+                    @method("PUT")
+                    <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
+                    <input type="hidden" name="clock_id" value="{{$clock->id}}">
+                    <input type="hidden" name="disable" value="0">
+                    <button class="btn btn-success action-button"  style="margin-left: 15px;">Activate All</button>
+                </form>
+            </div>
+
+        </div>   
+
         <div class="row">
-            <div class="col-lg-6 col-md-8">
+            <div class="col-lg-6 col-md-6">
+                <div>
+                    <form class="user mb-3" action="{{route('admin.numbers.disable-by-group')}}" method="POST" >
+                        @csrf
+                        @method("PUT")
+                        <div style="display: flex">
+                            <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
+                            <input type="hidden" name="clock_id" value="{{$clock->id}}">
+                            <input type="text" class="form-control" placeholder="Enter numbers by separating comma (Eg. 11,12,13)" name="numbers" style="display:inline">
+                            <button class="btn btn-danger" style="margin-left:5px;">Disable</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6">
                 <form class="user mb-3" action="{{route('admin.numbers.reset-sell')}}" method="POST" >
                     @csrf
                     @method("PUT")
@@ -37,32 +76,6 @@
                         <button class="btn btn-primary" style="margin-left:5px;">Reset</button>
                     </div>
                 </form>
-            </div>
-            <div class="col-lg-6 col-md-4">
-                <div style="margin-bottom: 10px;display:flex">
-                    <div>
-                        <form class="user mb-3" action="{{route('admin.numbers.disable-all')}}" method="POST" >
-                            @csrf
-                            @method("PUT")
-                            <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
-                            <input type="hidden" name="clock_id" value="{{$clock->id}}">
-                            <input type="hidden" name="disable" value="1">
-                            <button class="btn btn-primary">Disable All</button>
-                        </form>
-                    </div>
-
-                    <div>
-                        <form class="user mb-3" action="{{route('admin.numbers.disable-all')}}" method="POST" >
-                            @csrf
-                            @method("PUT")
-                            <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
-                            <input type="hidden" name="clock_id" value="{{$clock->id}}">
-                            <input type="hidden" name="disable" value="0">
-                            <button class="btn btn-primary"  style="margin-left: 15px;">Activate All</button>
-                        </form>
-                    </div>
-
-                </div>
             </div>
         </div>
 

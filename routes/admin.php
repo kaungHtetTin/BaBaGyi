@@ -21,6 +21,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\NumberController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\MobileVersionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +102,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/contacts/{id}',[ContactController::class,'delete'])->name('admin.contacts.remove');
 
         Route::put('/numbers/disable-all',[NumberController::class,'disableAll'])->name('admin.numbers.disable-all');
+        Route::put('/numbers/disable-by-group',[NumberController::class,'disabeByGroup'])->name('admin.numbers.disable-by-group');
         Route::put('/numbers/reset-sell',[NumberController::class,'resetSellAmount'])->name('admin.numbers.reset-sell');
         Route::get('/numbers',[NumberController::class,'index'])->name('admin.numbers');
         Route::get('/numbers/reports',[NumberController::class,'report'])->name('admin.numbers.report');
@@ -121,6 +123,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/notices/{id}',[NoticeController::class,'delete'])->name('admin.notices.remove');
 
         Route::get('/holidays',[HolidayController::class,'index'])->name('admins.holidays');
+
+        Route::get('/mobile-versions',[MobileVersionController::class,'index'])->name('admins.mobile-versions');
+        Route::get('/mobile-versions/add',[MobileVersionController::class,'add'])->name('admins.mobile-versions.add');
+        Route::post('/mobile-versions/add',[MobileVersionController::class,'store'])->name('admins.mobile-versions.add');
     });
 });
 

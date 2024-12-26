@@ -19,7 +19,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                    <div style="display: flex">
-                        <h6 style="flex:1" class="m-0 font-weight-bold text-primary">Payment Methods</h6>
+                        <h6 style="flex:1" class="m-0 font-weight-bold text-primary">Admins</h6>
                         @if (Auth::user()->id == 1)
                             <div style="flex:1">
                                 <a href="{{route('admin.register')}}" style="float: right;" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i

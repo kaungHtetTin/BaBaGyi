@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\AdminNotifyController;
 use App\Http\Controllers\Api\NumberController;
+use App\Http\Controllers\Api\MobileVersionController;
 
 Route::post('/sanctum/token', function (Request $request) {
     $request->validate([
@@ -95,6 +96,7 @@ Route::get('/remote/thai-3d',[RemoteNumberController::class,'get3DNumber']);
 Route::get('/admin-notify',[AdminNotifyController::class,'notify']);
 
 Route::get('/numbers',[NumberController::class,'index']);
+Route::get('/latest-version',[MobileVersionController::class,'get_latest_version']);
 
 Route::get('/time-zone',function(){
     $now = now();

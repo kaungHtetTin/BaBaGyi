@@ -105,6 +105,27 @@ class NumberController extends Controller
         
     }
 
+    public function disabeByGroup(Request $req){
+        $req->validate([
+            'lottery_type_id'=>'required',
+            'clock_id'=>'required',
+            'numbers'=>'required',
+        ]);
+
+        $numberStr = $req->numbers;
+        $numbers = explode(",",$numberStr);
+       
+        foreach($numbers as $number){
+            Number::where('lottery_type_id',$req->lottery_type_id)
+            ->where('clock_id',$req->clock_id)
+            ->where('number',$number)
+            ->update(['disable'=>1]);
+        }
+
+        return back()->with('msg','All number was successfully disable.');
+
+    }
+
     public function resetSellAmount(Request $req){
         $req->validate([
             'lottery_type_id'=>'required',

@@ -151,6 +151,7 @@
                 <h6 class="collapse-header">Admin Setting:</h6>
                 <a class="collapse-item" href="{{route('admin.admins')}}">Admin List</a>
                 <a class="collapse-item" href="{{route('admin.payment-methods')}}">Payment Methods</a>
+                <a class="collapse-item" href="{{route('admins.mobile-versions')}}">Mobile Versions</a>
                 <a class="collapse-item" href="{{route('admin.contacts')}}">Misc Setting</a>
                 <a class="collapse-item" href="{{route('admins.holidays')}}">Holiday</a>
             
