@@ -22,6 +22,7 @@ use App\Http\Controllers\NumberController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\MobileVersionController;
+use App\Http\Controllers\HotNumberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -128,6 +129,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/mobile-versions',[MobileVersionController::class,'index'])->name('admins.mobile-versions');
         Route::get('/mobile-versions/add',[MobileVersionController::class,'add'])->name('admins.mobile-versions.add');
         Route::post('/mobile-versions/add',[MobileVersionController::class,'store'])->name('admins.mobile-versions.add');
+
+        Route::post('/hot-numbers',[HotNumberController::class,'store'])->name('admins.hot-numbers.store');
+        Route::delete('/hot-numbers',[HotNumberController::class,'destroyAll'])->name('admins.hot-numbers.destroy');
+
     });
 });
 

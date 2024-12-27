@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Number;
 use App\Models\LotteryType;
 use App\Models\Clock;
+use App\Models\HotNumber;
 
 class NumberController extends Controller
 {
@@ -19,11 +20,17 @@ class NumberController extends Controller
         ->where('clock_id',$clock_id)
         ->get();
 
+        $hot_numbers = HotNumber::where('lottery_type_id',$lottery_type_id)
+        ->where('clock_id',$clock_id)
+        ->get();
+
         return view('admin.numbers',[
             'numbers' => $numbers,
             'lottery_type'=>$lottery_type,
             'clock'=>$clock,
+            'hot_numbers'=>$hot_numbers,
             'page_name'  => 'Number Setting',
+
         ]);
 
     }

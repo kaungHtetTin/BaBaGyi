@@ -90,6 +90,39 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div>
+                    <h4 class="h4">Hot Numbers: 
+                        @foreach ($hot_numbers as $number)
+                            {{$number->number}}, 
+                        @endforeach
+                    </h4>
+                </div>
+                <div style="display: flex">
+                    <form class="user mb-3" action="{{route('admins.hot-numbers.store')}}" method="POST" style="flex: 1">
+                        @csrf
+                        <div style="display: flex">
+                            <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
+                            <input type="hidden" name="clock_id" value="{{$clock->id}}">
+                            <input type="text" class="form-control" placeholder="Enter 1,2,3" name="numbers" style="display:inline">
+                            <button class="btn btn-primary" style="margin-left:5px;">Add</button>
+                        </div>
+                    </form>
+                    <form class="user mb-3" action="{{route('admins.hot-numbers.destroy')}}" method="POST" >
+                        @csrf
+                        @method('DELETE')
+                        <div style="display: flex">
+                            <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
+                            <input type="hidden" name="clock_id" value="{{$clock->id}}">
+                            <button class="btn btn-danger" style="margin-left:5px;">Clear</button>
+                        </div>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
                 <thead>
