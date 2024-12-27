@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Lottery;
 use App\Models\Voucher;
 use App\Models\Number;
+use App\Models\HotNumber;
 use Illuminate\Support\Facades\DB;
 
 class RunTaskAt1201PM extends Command
@@ -78,5 +79,6 @@ class RunTaskAt1201PM extends Command
         ->update(['win'=>0,'verified'=>1]);
 
         Number::where('clock_id',$clock_id)->where('lottery_type_id',$lottery_type_id)->update(['demand'=>0,'disable'=>0]);
+        HotNumber::where('clock_id',$clock_id)->where('lottery_type_id',$lottery_type_id)->delete();
     }
 }
