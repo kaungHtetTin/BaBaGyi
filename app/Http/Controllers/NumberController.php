@@ -139,4 +139,25 @@ class NumberController extends Controller
 
         return back()->with('msg','The sell amount for all numbers was successfully updated');
     }
+
+    public function resetSellAmountByGroup(Request $req){
+        $req->validate([
+            'lottery_type_id'=>'required',
+            'clock_id'=>'required',
+            'sell'=>'required',
+            'numbers'=>'required',
+        ]);
+
+        $numberStr = $req->numbers;
+        $numbers = explode(",",$numberStr);
+
+        foreach($numbers as $number){
+            Number::where('lottery_type_id',$req->lottery_type_id)
+            ->where('clock_id',$req->clock_id)
+            ->where('number',$number)
+            ->update(['sell'=>$req->sell]);
+        }
+
+         return back()->with('msg','The sell amount for selected numbers was successfully updated');
+    }
 }

@@ -104,6 +104,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/numbers/disable-all',[NumberController::class,'disableAll'])->name('admin.numbers.disable-all');
         Route::put('/numbers/disable-by-group',[NumberController::class,'disabeByGroup'])->name('admin.numbers.disable-by-group');
         Route::put('/numbers/reset-sell',[NumberController::class,'resetSellAmount'])->name('admin.numbers.reset-sell');
+        Route::put('/numbers/reset-sell-by-group',[NumberController::class,'resetSellAmountByGroup'])->name('admin.numbers.reset-sell-by-group');
         Route::get('/numbers',[NumberController::class,'index'])->name('admin.numbers');
         Route::get('/numbers/reports',[NumberController::class,'report'])->name('admin.numbers.report');
         Route::put('/numbers/{id}/disble',[NumberController::class,'disable'])->name('admin.numbers.disable');
