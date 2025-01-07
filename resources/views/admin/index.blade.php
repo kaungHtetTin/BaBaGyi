@@ -59,7 +59,27 @@
             <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card shadow h-100 py-2">
                     <div class="card-header">
-                        MM 2D
+                        <div class="row">
+                            <div class="col-6">
+                                <span style="font-weight: bold;font-size:20px;">
+                                    MM 2D
+                                </span>
+                                @if ($mm2d->release_mode == 1)
+                                    <span style="font-weight: bold;color:green;font-size:14px;">
+                                        Auto Release
+                                    </span>
+                                @else
+                                    <span style="font-weight: bold;color:red;font-size:14px;">
+                                        Manual Release
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="col-6">
+                                @if ($mm2d->release_mode == 0)
+                                    <a href="{{route('admins.manual-release','2d')}}" class="btn btn-primary" style="float: right">Release</a>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -145,7 +165,27 @@
             <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card shadow h-100 py-2">
                     <div class="card-header">
-                        MM 3D
+                       <div class="row">
+                            <div class="col-6">
+                                <span style="font-weight: bold;font-size:20px;">
+                                    MM 3D
+                                </span>
+                                @if ($mm3d->release_mode == 1)
+                                    <span style="font-weight: bold;color:green;font-size:14px;">
+                                        Auto Release
+                                    </span>
+                                @else
+                                    <span style="font-weight: bold;color:red;font-size:14px;">
+                                        Manual Release
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="col-6">
+                                @if ($mm3d->release_mode == 0)
+                                    <a href="{{route('admins.manual-release','3d')}}" class="btn btn-primary" style="float: right">Release</a>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use App\Models\Lottery;
+use App\Models\LotteryType;
 use App\Models\Voucher;
 use App\Models\Number;
 use App\Models\HotNumber;
@@ -33,9 +34,14 @@ class RunTaskAt430PM extends Command
      */
     public function handle()
     {
+
+
         $lottery_type_id = 2;
         $clock_id = 4;
      
+        $lottery_type = LotteryType::find($lottery_type_id);
+        if($lottery_type->release_mode == 0) return;
+
         $url = "https://api.thaistock2d.com/live";
 
         $headers = [

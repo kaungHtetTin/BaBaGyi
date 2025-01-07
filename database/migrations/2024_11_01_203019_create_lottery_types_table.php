@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('type');
             $table->integer('coefficient')->default(1);
             $table->integer('close_before')->default(30);
+            $table->boolean('release_mode')->default(true);
             $table->boolean('open')->default(true);
             $table->text('api_url')->nullable();
             $table->timestamps();

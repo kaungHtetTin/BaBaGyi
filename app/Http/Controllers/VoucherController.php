@@ -42,6 +42,7 @@ class VoucherController extends Controller
         ->where('lottery_type_id',$lottery_type_id)
         ->orderBy('verified','asc')
         ->orderBy('created_at','desc')
+        ->orderBy('number','asc')
         ->paginate(100);
 
         $earning_today = Voucher::where(DB::raw("YEAR(created_at)"),date('Y'))
@@ -59,7 +60,7 @@ class VoucherController extends Controller
 
         return view('admin.vouchers',[
             'page_name'=>'Vouchers',
-            'title'=>'Thai 2D Vouchers',
+            'title'=>'2D Vouchers',
             'vouchers'=>$vouchers,
             'earning_today'=>$earning_today,
             'give_Back_today'=>$give_Back_today,
@@ -73,6 +74,9 @@ class VoucherController extends Controller
         ->where('user_id','!=',2)
         ->where('lottery_type_id',3)
         ->orderBy('verified','asc')
+        ->orderBy('created_at','desc')
+        ->orderBy('bonus_win','desc')
+        ->orderBy('number','asc')
         ->paginate(100);
 
         $day = date('d');
@@ -104,7 +108,7 @@ class VoucherController extends Controller
 
         return view('admin.vouchers',[
             'page_name'=>'Vouchers',
-            'title'=>'Thai 3D Vouchers',
+            'title'=>'3D Vouchers',
             'vouchers'=>$vouchers,
             'earning_today'=>$earning_today,
             'give_Back_today'=>$give_Back_today,
@@ -137,6 +141,43 @@ class VoucherController extends Controller
         return back()->with('msg','The voucher was successfully approved');
     }
 
+    public function update(Request $req, $id){
+        $req->validate([
+            'amount'=>'required|numeric',
+        ]);
+
+        $voucher = Voucher::find($id);
+        $user = $voucher->user;
+  
+        $win_amount = $req->amount;
+
+        $user->balance = $user->balance + $win_amount;
+        $user->save();
+
+        $wallet_history = new WalletHistory();
+        $wallet_history->user_id = $user->id;
+        $wallet_history->title = "ထီပေါက်";
+        $wallet_history->amount = $win_amount;
+        $wallet_history->income = 1;
+        $wallet_history->save();
+
+        $voucher->verified = 1;
+        $voucher->verified_by = Auth::user()->id;
+        $voucher->win_amount = $win_amount;
+        $voucher->win = 1;
+        $voucher->save();
+    
+        return back()->with('msg','The voucher was successfully updated');
+    }
+
+    public function edit($id){
+        $voucher = Voucher::find($id);
+        return view('admin.voucher-detail',[
+            'voucher'=>$voucher,
+            'page_name'=>'Vouchers',
+        ]);
+    }
+
     public function delete($id){
         $voucher = Voucher::find($id);
         $amount = $voucher->amount;
@@ -147,7 +188,7 @@ class VoucherController extends Controller
 
         $wallet_history = new WalletHistory();
         $wallet_history->user_id = $user->id;
-        $wallet_history->title = "ထီအားလပ်ရက်အတွက် ငွေပြန်အမ်းခြင်း";
+        $wallet_history->title = "ထီထိုးငွေ ပြန်အမ်းခြင်း";
         $wallet_history->amount = $amount;
         $wallet_history->income = 1;
         $wallet_history->save();

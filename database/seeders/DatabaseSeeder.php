@@ -89,6 +89,7 @@ class DatabaseSeeder extends Seeder
             'type'=>'BTC 2D',
             'coefficient'=>90,
             'open'=>1,
+            'release_mode'=>1,
             'api_url'=>"",
         ]);
 
@@ -96,6 +97,7 @@ class DatabaseSeeder extends Seeder
             'type'=>'Thai 2D',
             'coefficient'=>90,
             'open'=>1,
+            'release_mode'=>1,
             'api_url'=>"",
         ]);
 
@@ -103,6 +105,7 @@ class DatabaseSeeder extends Seeder
             'type'=>'Thai 3D',
             'coefficient'=>500,
             'open'=>1,
+            'release_mode'=>1,
             'api_url'=>"",
         ]);
 

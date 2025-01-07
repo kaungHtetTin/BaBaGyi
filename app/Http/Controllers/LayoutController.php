@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Transaction;
 use App\Models\Withdraw;
 use App\Models\Voucher;
+use App\Models\LotteryType;
 class LayoutController extends Controller
 {
     public function index(Request $req){
@@ -109,6 +110,8 @@ class LayoutController extends Controller
         ->where('lottery_type_id',3)
         ->sum('amount');
 
+        $mm2d = LotteryType::find(2);
+        $mm3d = LotteryType::find(3);
      
         return view('admin.index',[
             'page_name'=>'Dashboard',
@@ -128,6 +131,8 @@ class LayoutController extends Controller
             'earning_3d_16'=>$earning_3d_16,
             'saleOfYear'=>$saleOfYear,
             'lossOfYear'=>$lossOfYear,
+            'mm2d'=>$mm2d,
+            'mm3d'=>$mm3d,
         ]);
     }
 }

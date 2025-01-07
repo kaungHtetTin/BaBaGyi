@@ -9,9 +9,41 @@
         table tr td{
             font-size: 14px;
         }
+        .release-mode{
+            color:#777;
+            cursor: pointer;
+            padding:3px;
+            text-decoration: none;
+        }
+
+        .release-mode-active{
+            color:#1cc88a;
+            cursor: pointer;
+            padding:3px;
+            text-decoration: none;
+        }
+
+        .release-mode-active:hover{
+            background: #1cc88a;
+            border-radius:7px;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .release-mode:hover{
+            background: #1cc88a;
+            border-radius:7px;
+            color: white;
+            text-decoration: none;
+        }
     </style>
 
     <div class="container-fluid">
+        @if (session('msg'))
+            <div class="alert alert-success">
+                {{session('msg')}}
+            </div>
+        @endif
         <!-- Page Heading -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Lottery Types</h1>
@@ -25,6 +57,7 @@
                         <th>Multiplication</th>
                         <th>Clock</th>
                         <th>Close Before (Minute)</th>
+                        <th>Release Mode</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -35,6 +68,7 @@
                         <th>Multiplication</th>
                         <th>Clock</th>
                         <th>Close Before (Minute)</th>
+                        <th>Release Mode</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -53,6 +87,18 @@
                                 {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}
                             </td>
                             <td>{{$lottery->close_before}}</td>
+                            <td>
+                                @if ($lottery->lottery_type->release_mode == 1)
+                                    <a href="{{route('admin.lottery-types.release_auto',$lottery->lottery_type->id)}}" class="release-mode-active"><strong>Auto</strong></a> 
+                                    | 
+                                    <a href="{{route('admin.lottery-types.release_manual',$lottery->lottery_type->id)}}" class="release-mode"><strong>Manual</strong></a>
+                                @else
+                                    <a href="{{route('admin.lottery-types.release_auto',$lottery->lottery_type->id)}}" class="release-mode"><strong>Auto</strong></a> 
+                                    | 
+                                    <a href="{{route('admin.lottery-types.release_manual',$lottery->lottery_type->id)}}" class="release-mode-active"><strong>Manual</strong></a>
+                                @endif
+                                
+                            </td>
                             <td>
                                 @if ($lottery->lottery_type->open == 1)
                                     <strong class="text-success">Open</strong>
@@ -126,4 +172,14 @@
             </table>
         </div>
     </div>
+    <script>
+        $(document).ready(()=>{
+            $('#auto_mode').click(()=>{
+                alert('auto')
+            })
+            $('#manual_mode').click(()=>{
+                alert('manual')
+            })
+        })
+    </script>
 @endsection

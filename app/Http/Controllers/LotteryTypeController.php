@@ -62,4 +62,17 @@ class LotteryTypeController extends Controller
         return back()->with('msg','The lottery was successfully updated');
 
     }
+    public function releaseAuto($id){
+        $lottery_type = LotteryType::find($id);
+        $lottery_type->release_mode = 1;
+        $lottery_type->save();
+        return back()->with('msg','The lottery release mode was successfully updated');
+    }
+
+    public function releaseManual($id){
+        $lottery_type = LotteryType::find($id);
+        $lottery_type->release_mode = 0;
+        $lottery_type->save();
+        return back()->with('msg','The lottery release mode was successfully updated');
+    }
 }

@@ -83,7 +83,11 @@
                                 <td>{{$voucher->amount}}</td>
                                 <td>
                                     @if ($voucher->win == 1)
-                                         {{$voucher->amount * $voucher->lottery_type->coefficient}}
+                                        @if ($voucher->win_amount > 0)
+                                            {{$voucher->win_amount}}
+                                        @else
+                                            {{$voucher->amount * $voucher->lottery_type->coefficient}}
+                                        @endif
                                     @endif
                                 </td>
                                 <td>
@@ -91,7 +95,11 @@
                                         @if ($voucher->win == 1)
                                             <span style="color:green;font-weight:bold">Win</span>
                                         @else
-                                            <span style="color:red;font-weight:bold">Fail</span>
+                                             @if ($voucher->bonus_win == 1)
+                                                <span style="color:yellow;font-weight:bold">Fail</span>
+                                            @else
+                                                <span style="color:red;font-weight:bold">Fail</span>
+                                            @endif
                                         @endif
                                     @else
                                         @if ($voucher->win == 1)
@@ -107,7 +115,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($voucher->verified == 0 )
+                                    @if ($voucher->verified == 0)
                                         @if ($voucher->win == 1)
                                             <a class="btn btn-primary action-button"href="#" data-toggle="modal" data-target="#approve-modal-{{$voucher->id}}"> Paid</a>
                                         @else
@@ -118,7 +126,14 @@
 
                                     @if ($voucher->verified_by != 0)
                                         <span style="color:green;"><i class="fas fa-check-circle fa-fw"></i> Paid</span>
+                                       
                                     @endif
+
+                                    @if($voucher->win == 0 && $voucher->verified == 1 ) 
+                                            <a class="btn btn-secondary action-button" href="{{route('admin.vouchers.edit',$voucher->id)}}"> Edit</a>
+                                    @endif
+
+                                   
                                 </td>
 
                                 <div class="modal fade" id="approve-modal-{{$voucher->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -177,7 +192,7 @@
             </div>
             {{$vouchers->links()}}
         </div>
-       
 
+        
     </div>
 @endsection

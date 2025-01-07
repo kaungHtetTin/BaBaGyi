@@ -23,6 +23,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\MobileVersionController;
 use App\Http\Controllers\HotNumberController;
+use App\Http\Controllers\ReleaseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/lottery-types/{id}/edit',[LotteryTypeController::class,'edit'])->name('admin.lottery-types.edit');
         Route::PUT('/lottery-types/{id}',[LotteryTypeController::class,'update'])->name('admin.lottery-types.update');
         Route::PUT('/lottery-types/{id}/change-status',[LotteryTypeController::class,'changeStatus'])->name('admin.lottery-types.change-status');
+        Route::get('/lottery-types/{id}/release-auto',[LotteryTypeController::class,'releaseAuto'])->name('admin.lottery-types.release_auto');
+        Route::get('/lottery-types/{id}/release-manual',[LotteryTypeController::class,'releaseManual'])->name('admin.lottery-types.release_manual');
 
         Route::get('/chatrooms',[ConversationController::class,'index'])->name('admin.chatrooms');
 
@@ -87,8 +90,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/{id}/password-reset',[UserController::class,'resetPassword'])->name('admin.users.password-reset');
 
         Route::get('/vouchers/btc-2d',[VoucherController::class,'voucher_btc'])->name('admin.vouchers.btc-2d');
-        Route::get('/vouchers/thai-2d',[VoucherController::class,'voucher_2d'])->name('admin.vouchers.thai-2d');
-        Route::get('/vouchers/thai-3d',[VoucherController::class,'voucher_3d'])->name('admin.vouchers.thai-3d');
+        Route::get('/vouchers/2d',[VoucherController::class,'voucher_2d'])->name('admin.vouchers.thai-2d');
+        Route::get('/vouchers/3d',[VoucherController::class,'voucher_3d'])->name('admin.vouchers.thai-3d');
+        Route::get('/vouchers/{id}/edit',[VoucherController::class,'edit'])->name('admin.vouchers.edit');
+        Route::put('/vouchers/{id}/update',[VoucherController::class,'update'])->name('admin.vouchers.update');
         Route::put('/vouchers/{id}/approve',[VoucherController::class,'approve'])->name('admin.vouchers.approve');
         Route::delete('/vouchers/{id}/delete',[VoucherController::class,'delete'])->name('admin.vouchers.delete');
 
@@ -124,6 +129,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/notices',[NoticeController::class,'store'])->name('admin.notices.save');
         Route::delete('/notices/{id}',[NoticeController::class,'delete'])->name('admin.notices.remove');
 
+        Route::get('/manual-release/{type}',[ReleaseController::class,'manualRelease'])->name('admins.manual-release');
+
+        Route::post('/release-2d',[ReleaseController::class,'release2D'])->name('admins.release-2d');
+        Route::post('/release-3d',[ReleaseController::class,'release3D'])->name('admins.release-3d');
+
+
         Route::get('/holidays',[HolidayController::class,'index'])->name('admins.holidays');
 
         Route::get('/mobile-versions',[MobileVersionController::class,'index'])->name('admins.mobile-versions');
@@ -132,7 +143,7 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/hot-numbers',[HotNumberController::class,'store'])->name('admins.hot-numbers.store');
         Route::delete('/hot-numbers',[HotNumberController::class,'destroyAll'])->name('admins.hot-numbers.destroy');
-
+    
     });
 });
 
