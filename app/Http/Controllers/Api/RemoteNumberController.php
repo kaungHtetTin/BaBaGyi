@@ -52,26 +52,16 @@ class RemoteNumberController extends Controller
             $response['status'] = "closed";
         }
 
-        $lottery = Lottery::where(DB::raw("DAY(created_at)"),1)
-        ->where(DB::raw("MONTH(created_at)"),date('m'))
+        $lottery = Lottery::where(DB::raw("MONTH(created_at)"),date('m'))
         ->where(DB::raw("YEAR(created_at)"),date('Y'))
         ->where('lottery_type_id',3)
         ->get();
-
         if(count($lottery)>0){
-            $lottery = $lottery[0];
-            $response['history']['first'] = $lottery;
+            $response['history']['first'] = $lottery[0];
         }
-    
-        $lottery = Lottery::where(DB::raw("DAY(created_at)"),16)
-        ->where(DB::raw("MONTH(created_at)"),date('m'))
-        ->where(DB::raw("YEAR(created_at)"),date('Y'))
-        ->where('lottery_type_id',3)
-        ->get();
 
-        if(count($lottery)>0){
-            $lottery = $lottery[0];
-            $response['history']['second'] = $lottery;
+        if(count($lottery)>1){
+            $response['history']['second'] = $lottery[1];
         }
 
         return $response;
