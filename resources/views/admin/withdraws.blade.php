@@ -84,7 +84,7 @@
                                 @if ($withdraw->verified==1)
                                     <span style="color:green;"><i class="fas fa-check-circle fa-fw"></i> Sent</span>
                                 @else
-                                    <a class="btn btn-primary action-button"href="#" data-toggle="modal" data-target="#approve-modal-{{$withdraw->id}}"> Sent</a>
+                                    <a class="btn btn-primary action-button" href="#" data-toggle="modal" data-target="#approve-modal-{{$withdraw->id}}"> Sent</a>
                                 @endif
                             </td>
 

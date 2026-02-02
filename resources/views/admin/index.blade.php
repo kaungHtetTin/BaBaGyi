@@ -545,11 +545,11 @@
                 s[1] += new Array(prec - s[1].length + 1).join('0');
             }
             return s.join(dec);
-            }
+        }
 
             // Area Chart Example
-            var ctx = document.getElementById("myAreaChart");
-            var myLineChart = new Chart(ctx, {
+        var ctx = document.getElementById("myAreaChart");
+        var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
