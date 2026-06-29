@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/register',function(){
         return view('admin.register',[
-
+            'page_name' => 'Add Admin',
             ]);
         })->name('admin.register');
         Route::post('register', [RegisteredUserController::class, 'storeAdmin'])->name('admin.register');

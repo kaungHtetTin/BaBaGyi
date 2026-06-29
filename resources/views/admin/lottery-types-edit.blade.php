@@ -1,46 +1,82 @@
 @php
-    $lottery_hour = $clock->hour<9 ? "0".$clock->hour: $clock->hour;
-    $lottery_minute = $clock->minute<9 ? "0".$clock->minute: $clock->minute;
+    $lottery_hour = $clock->hour < 10 ? '0' . $clock->hour : $clock->hour;
+    $lottery_minute = $clock->minute < 10 ? '0' . $clock->minute : $clock->minute;
+    $drawLabel = $lottery_hour . ':' . $lottery_minute . ' ' . ($clock->morning == 1 ? 'AM' : 'PM');
+    $isAuto = $lottery_type->release_mode == 1;
 @endphp
 @extends('admin.master')
 @section('content')
     <div class="container-fluid">
         @if (session('msg'))
             <div class="alert alert-success">
-                {{session('msg')}}
+                {{ session('msg') }}
             </div>
         @endif
 
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-           <h1 class="h3 mb-0 text-gray-800">
-                Edit
-           </h1>
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">LOTTERY CONFIGURATION</p>
+                <h1>Edit lottery schedule</h1>
+            </div>
+            <a class="btn secondary" href="{{ route('admin.lottery-types') }}">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
         </div>
 
-        <h1 class="h1" style="text-align: center;font-size:60px;">
-            {{$lottery_type->type}}  
-            {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}
-        </h1>
-       
-
-        <form style="width: 70%;margin:auto" class="user mb-3" action="{{route('admin.lottery-types.update',$lottery_clock->id)}}" method="POST" >
-            @csrf
-            @method("PUT")
-            <div class="form-group">
-                <span>Multiplication</span>
-                <input type="text" class="form-control" placeholder="Enter Multiplication" name="multiplication" style="display:inline" value="{{$lottery_type->coefficient}}">
-                <p style="color: red;font-size:14px;">{{$errors->first('multiplication')}}</p>
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">DRAW SETTINGS</p>
+                    <h2>{{ $lottery_type->type }} <span class="clock-pill">{{ $drawLabel }}</span></h2>
+                    <p class="panel-subtitle">Adjust the multiplier, close timing, and release mode for this schedule.</p>
+                </div>
+                <div class="release-toggle {{ $isAuto ? 'is-auto' : 'is-manual' }}" aria-label="{{ $lottery_type->type }} release mode">
+                    <a class="{{ $isAuto ? 'active' : '' }}" href="{{ route('admin.lottery-types.release_auto', $lottery_type->id) }}"
+                        aria-current="{{ $isAuto ? 'true' : 'false' }}">
+                        <i class="fas fa-sync-alt"></i>
+                        Auto
+                    </a>
+                    <a class="{{ !$isAuto ? 'active' : '' }}" href="{{ route('admin.lottery-types.release_manual', $lottery_type->id) }}"
+                        aria-current="{{ !$isAuto ? 'true' : 'false' }}">
+                        <i class="fas fa-hand-paper"></i>
+                        Manual
+                    </a>
+                </div>
             </div>
 
-            <div class="form-group">
-                <span>Close Before (Minute)</span>
-                <input type="text" class="form-control" placeholder="Enter in minute" name="close_before" style="display:inline" value="{{$lottery_clock->close_before}}">
-                <p style="color: red;font-size:14px;">{{$errors->first('close_before')}}</p>
-            </div>
-           
-            <button class="btn btn-primary" style="width:100%">Update</button>
-            
-        </form>
+            <form class="settings-form" action="{{ route('admin.lottery-types.update', $lottery_clock->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="settings-form-grid">
+                    <label class="form-field">
+                        <span>Multiplication</span>
+                        <input type="text" placeholder="Enter multiplication" name="multiplication"
+                            value="{{ old('multiplication', $lottery_type->coefficient) }}">
+                        @error('multiplication')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+
+                    <label class="form-field">
+                        <span>Close before (minutes)</span>
+                        <input type="text" placeholder="Enter minutes" name="close_before"
+                            value="{{ old('close_before', $lottery_clock->close_before) }}">
+                        @error('close_before')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+                </div>
+
+                <div class="settings-form-actions">
+                    <a class="btn secondary" href="{{ route('admin.lottery-types') }}">Cancel</a>
+                    <button class="btn primary" type="submit">
+                        <i class="fas fa-save"></i>
+                        Update settings
+                    </button>
+                </div>
+            </form>
+        </section>
     </div>
 @endsection

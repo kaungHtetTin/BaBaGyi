@@ -1,35 +1,49 @@
 @php
     $months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 @endphp
+
 @extends('admin.master')
+
 @section('content')
     <div class="container-fluid">
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Holidays</h1>
-             
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">OPERATIONS CALENDAR</p>
+                <h1>Holidays</h1>
+            </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Day</th>
-                    </tr>
-                </thead>
-    
-                <tbody>
-                    @foreach ($holidays as $holiday)
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">CALENDAR RULES</p>
+                    <h2>Holiday list</h2>
+                    <p class="panel-subtitle">{{ number_format($holidays->count()) }} configured holidays</p>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
                         <tr>
-                            <td> {{$holiday->title}} </td>
-                            <td>{{$months[$holiday->month-1].', '.$holiday->day}}</td>
+                            <th>Title</th>
+                            <th>Day</th>
                         </tr>
-
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
+                    </thead>
+                    <tbody>
+                        @forelse ($holidays as $holiday)
+                            <tr>
+                                <td><strong class="table-primary-line">{{ $holiday->title }}</strong></td>
+                                <td>{{ $months[$holiday->month - 1] . ', ' . $holiday->day }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2"><span class="muted">No holidays found.</span></td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 @endsection

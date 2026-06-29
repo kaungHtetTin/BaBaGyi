@@ -1,147 +1,170 @@
+@php
+    $transactionRows = $transactions->getCollection();
+    $pendingCount = $transactionRows->where('verified', 0)->count();
+    $verifiedCount = $transactionRows->where('verified', 1)->count();
+@endphp
+
 @extends('admin.master')
+
 @section('content')
-    <style>
-        .action-button{
-            padding:3px;
-            font-size: 12px;
-            margin:3px;
-        }
-        table tr td{
-            font-size: 14px;
-        }
-    </style>
     <div class="container-fluid">
         @if (session('msg'))
             <div class="alert alert-success">
-                {{session('msg')}}
+                {{ session('msg') }}
             </div>
         @endif
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Top Up</h1>
+
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">FINANCIAL REVIEW</p>
+                <h1>Top Up</h1>
+            </div>
         </div>
 
-        <div class="alert alert-info">
-            Amount today - <strong>{{$amount_today}}</strong>
-        </div>
+        <section class="report-metrics" aria-label="Top up metrics">
+            <article class="metric-card glass">
+                <span><i class="fas fa-coins"></i></span>
+                <small>Amount today</small>
+                <strong>{{ number_format($amount_today) }}</strong>
+                <p>MMK received today</p>
+            </article>
+            <article class="metric-card glass">
+                <span><i class="fas fa-clock"></i></span>
+                <small>Pending review</small>
+                <strong>{{ number_format($pendingCount) }}</strong>
+                <p>On this page</p>
+            </article>
+            <article class="metric-card glass">
+                <span><i class="fas fa-check"></i></span>
+                <small>Verified</small>
+                <strong>{{ number_format($verifiedCount) }}</strong>
+                <p>On this page</p>
+            </article>
+        </section>
 
-        <div>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">PAYMENT QUEUE</p>
+                    <h2>Top up requests</h2>
+                    <p class="panel-subtitle">{{ number_format($transactions->total()) }} total requests</p>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table table-bordered" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Name</th>
+                            <th>User</th>
                             <th>Amount</th>
-                            <th style="background: rgb(249, 255, 239)">Banking</th>
-                            <th style="background: rgb(249, 255, 239)">Account Name</th>
-                            <th style="background: rgb(249, 255, 239)">Phone</th>
-                            <th style="background: rgb(249, 255, 239)">Trx Id</th>
+                            <th>Banking</th>
+                            <th>Account</th>
+                            <th>Phone</th>
+                            <th>Trx ID</th>
                             <th>Admin</th>
                             <th>Status</th>
-                            
-                            
                         </tr>
                     </thead>
-                    <tfoot>
-                        <tr>
-                            <th>Date</th>
-                            <th>Name</th>
-                            <th>Amount</th>
-                            <th style="background: rgb(249, 255, 239)">Banking</th>
-                            <th style="background: rgb(249, 255, 239)">Account Name</th>
-                            <th style="background: rgb(249, 255, 239)">Phone</th>
-                            <th style="background: rgb(249, 255, 239)">Trx Id</th>
-                            <th>Admin</th>
-                            <th>Status</th>
-                             
-                        </tr>
-                    </tfoot>
                     <tbody>
-                        @foreach ($transactions as $transaction)
+                        @forelse ($transactions as $transaction)
                             <tr>
-                                <td>{{$transaction->created_at->diffForHumans()}}</td>
-                                <td><a href="{{route('admin.users.transactions',$transaction->user_id)}}" style="text-decoration: none">{{$transaction->user->name}}</a></td>
-                                <td>{{$transaction->amount}}</td>
-                                <td  style="background: rgb(249, 255, 239);text-align:center">
-                                    <img src="{{asset($transaction->payment_method->banking->icon_url)}}" alt="" style="width: 20px;border-radius:5px;">
-                                    <div>{{$transaction->payment_method->banking->bank}}</div>
+                                <td>
+                                    <strong class="table-primary-line">{{ $transaction->created_at->diffForHumans() }}</strong>
+                                    <small class="table-secondary-line">{{ $transaction->created_at->format('M d, Y h:i A') }}</small>
                                 </td>
-                                <td  style="background: rgb(249, 255, 239)">{{$transaction->payment_method->account_name}}</td>
-                                <td  style="background: rgb(249, 255, 239)">{{$transaction->payment_method->method}}</td>
-                                <td  style="background: rgb(249, 255, 239)">{{$transaction->bank_transaction_id}}</td>
+                                <td>
+                                    <a class="table-primary-line" href="{{ route('admin.users.transactions', $transaction->user_id) }}">{{ $transaction->user->name }}</a>
+                                    <small class="table-secondary-line">{{ $transaction->user->phone ?? 'No phone' }}</small>
+                                </td>
+                                <td><span class="money-cell">{{ number_format($transaction->amount) }} MMK</span></td>
+                                <td>
+                                    <span class="bank-cell">
+                                        <img src="{{ asset($transaction->payment_method->banking->icon_url) }}" alt="{{ $transaction->payment_method->banking->bank }}">
+                                        <strong>{{ $transaction->payment_method->banking->bank }}</strong>
+                                    </span>
+                                </td>
+                                <td>{{ $transaction->payment_method->account_name }}</td>
+                                <td>{{ $transaction->payment_method->method }}</td>
+                                <td>{{ $transaction->bank_transaction_id }}</td>
                                 <td>
                                     @if ($transaction->verified_by != 0)
-                                        {{$transaction->verified_by($transaction->verified_by)->name}}
+                                        <strong>{{ $transaction->verified_by($transaction->verified_by)->name }}</strong>
+                                    @else
+                                        <span class="muted">Unassigned</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($transaction->verified==1)
-                                        <span style="color:green;"><i class="fas fa-check-circle fa-fw"></i> Verified</span>
+                                    @if ($transaction->verified == 1)
+                                        <span class="status status-success"><span class="status-dot"></span>Verified</span>
                                     @else
-                                        <a class="btn btn-primary action-button"href="#" data-toggle="modal" data-target="#approve-modal-{{$transaction->id}}"> Approve</a>
-                                        <a class="btn btn-danger action-button"href="#" data-toggle="modal" data-target="#delete-modal-{{$transaction->id}}"> Delete</a>
+                                        <div class="inline-actions">
+                                            <a class="btn primary" href="#" data-toggle="modal" data-target="#approve-modal-{{ $transaction->id }}">Approve</a>
+                                            <a class="btn danger" href="#" data-toggle="modal" data-target="#delete-modal-{{ $transaction->id }}">Delete</a>
+                                        </div>
                                     @endif
-
                                 </td>
-
-                                <div class="modal fade" id="approve-modal-{{$transaction->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="">Approve Transaction</h5>
-                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">×</span>
-                                                </button>
-                                            </div>
-                                            <div class="alert alert-success">
-                                                Do you really want to approve?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                <form action="{{route('admin.transactions.approve',$transaction->id)}}" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button class="btn btn-primary">Approve</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal fade" id="delete-modal-{{$transaction->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="">Delete Transaction</h5>
-                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">×</span>
-                                                </button>
-                                            </div>
-                                            <div class="alert alert-warning">
-                                                <strong>Warning: </strong>This action cannot be undo. Make sure the user sent you the wrong transactions. Do you really want to remove it?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                <form action="{{route('admin.transactions.remove',$transaction->id)}}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-danger">Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="9"><span class="muted">No top up requests found.</span></td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-             {{$transactions->links()}}
-        </div>
-       
-
+            {{ $transactions->links() }}
+        </section>
     </div>
+
+    @foreach ($transactions as $transaction)
+        <div class="modal fade" id="approve-modal-{{ $transaction->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Approve Transaction</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">Approve <strong>{{ number_format($transaction->amount) }} MMK</strong> for <strong>{{ $transaction->user->name }}</strong>?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <form action="{{ route('admin.transactions.approve', $transaction->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <button class="btn primary">Approve</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="delete-modal-{{ $transaction->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Transaction</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0"><strong>Warning:</strong> This action cannot be undone. Delete this transaction only if the submitted payment is wrong.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <form action="{{ route('admin.transactions.remove', $transaction->id) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 @endsection

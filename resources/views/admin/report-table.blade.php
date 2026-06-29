@@ -1,6 +1,7 @@
 @php
-    $lottery_hour = $clock->hour<9 ? "0".$clock->hour: $clock->hour;
-    $lottery_minute = $clock->minute<9 ? "0".$clock->minute: $clock->minute;
+    $lottery_hour = $clock->hour < 10 ? '0' . $clock->hour : $clock->hour;
+    $lottery_minute = $clock->minute < 10 ? '0' . $clock->minute : $clock->minute;
+    $drawLabel = $lottery_type->type . ' ' . $lottery_hour . ':' . $lottery_minute . ' ' . ($clock->morning == 1 ? 'AM' : 'PM');
     $total_amount = 0;
 @endphp
 
@@ -8,56 +9,66 @@
 <html lang="en">
 @include('admin.components.head')
 <body>
-    <style>
-        thead{
-            background:#4e73df;
-            color:white;
-        }
-    </style>
-    <div class="container">
-        <br><br>
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{{$lottery_type->type}} {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}</h1>
-            <a id="btn_print" href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                    class="fas fa-download fa-sm text-white-50"></i> Print Now</a>
-        </div>
+    <div class="app-root" data-theme="light">
+        <main class="print-page">
+            <div class="admin-page-heading">
+                <div>
+                    <p class="eyebrow">LIVE DEMAND REPORT</p>
+                    <h1>{{ $drawLabel }}</h1>
+                </div>
+                <button id="btn_print" class="btn primary" type="button">
+                    <i class="fas fa-print"></i>
+                    Print
+                </button>
+            </div>
 
+            <section class="panel glass">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">NUMBER DEMAND</p>
+                        <h2>Current demand amounts</h2>
+                        <p class="panel-subtitle">{{ number_format($numbers->count()) }} numbers with demand</p>
+                    </div>
+                </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <th>Number</th>
-                    <th>Amount</th>
-                </thead>
-                <tfoot>
-                    <tr>
-                        <th style=" background:rgb(13, 183, 87);color:white">Total</th>
-                        <th style=" background:rgb(13, 183, 87);color:white" id="total"></th>
-                    </tr>
-                </tfoot>
-                <tbody>
-                    @foreach ($numbers as $number)
-                        @php
-                            $total_amount += $number->demand;
-                        @endphp
-                        <tr>
-                            <td>{{$number->number}}</td>
-                            <td>{{$number->demand}}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                <div class="table-wrap">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Number</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($numbers as $number)
+                                @php
+                                    $total_amount += $number->demand;
+                                @endphp
+                                <tr>
+                                    <td><span class="lottery-number">{{ $number->number }}</span></td>
+                                    <td><span class="money-cell">{{ number_format($number->demand) }} MMK</span></td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2"><span class="muted">No demand found.</span></td>
+                                </tr>
+                            @endforelse
+                            <tr class="report-total-row">
+                                <td><strong>Total</strong></td>
+                                <td><strong>{{ number_format($total_amount) }} MMK</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
-    
+
     <script>
-        $(document).ready(()=>{
-            $('#btn_print').click(()=>{
+        $(document).ready(function () {
+            $('#btn_print').click(function () {
                 window.print();
             });
-
-            $('#total').html({{$total_amount}})
-
         });
     </script>
 </body>

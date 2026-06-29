@@ -8,6 +8,7 @@ use App\Models\Number;
 use App\Models\Report;
 use App\Models\ReportDetail;
 use App\Models\Clock;
+use App\Models\LotteryClock;
 
 class ReportController extends Controller
 {
@@ -27,12 +28,19 @@ class ReportController extends Controller
         ->orderBy('id','desc')
         ->paginate(100);
 
+        $report_draws = LotteryClock::with(['lottery_type', 'clock'])
+        ->whereIn('lottery_type_id', [2, 3])
+        ->orderBy('lottery_type_id')
+        ->orderBy('id')
+        ->get();
+
         return view('admin.reports',[
             'page_name'=>'Reports',
             'lottery_type'=>$lottery_type,
             'clock'=>$clock,
             'numbers' => $numbers,
             'reports'=>$reports,
+            'report_draws'=>$report_draws,
         ]);
     }
 

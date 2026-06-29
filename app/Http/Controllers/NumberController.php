@@ -7,6 +7,7 @@ use App\Models\Number;
 use App\Models\LotteryType;
 use App\Models\Clock;
 use App\Models\HotNumber;
+use App\Models\LotteryClock;
 
 class NumberController extends Controller
 {
@@ -24,11 +25,18 @@ class NumberController extends Controller
         ->where('clock_id',$clock_id)
         ->get();
 
+        $number_draws = LotteryClock::with(['lottery_type', 'clock'])
+        ->whereIn('lottery_type_id', [2, 3])
+        ->orderBy('lottery_type_id')
+        ->orderBy('id')
+        ->get();
+
         return view('admin.numbers',[
             'numbers' => $numbers,
             'lottery_type'=>$lottery_type,
             'clock'=>$clock,
             'hot_numbers'=>$hot_numbers,
+            'number_draws'=>$number_draws,
             'page_name'  => 'Number Setting',
 
         ]);

@@ -1,63 +1,78 @@
 @extends('admin.master')
-@section('content')
-<style>
-    .my-error{
-        color:red;
-        margin-left:10px;
-        font-size: 12px;
-    }
-</style>
-    <div class="container-fluid">
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Add New Version Update</h1>
-        </div>
 
+@section('content')
+    <div class="container-fluid">
         @if (session('msg'))
             <div class="alert alert-success">
-                {{session('msg')}}
+                {{ session('msg') }}
             </div>
         @endif
-        <div class="card">
-            <div class="card-body">
-                <form class="user" action="" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="form-group">
-                        <input type="text" class="form-control form-control-user"
-                            id="" aria-describedby="emailHelp"
-                            placeholder="Version Code" name="version_code">
-                        <p class="my-error"> {{$errors->first('version_code')}}</p>
-                    </div>
 
-                    <div class="form-group">
-                        <input type="text" class="form-control form-control-user"
-                            id="" aria-describedby="emailHelp"
-                            placeholder="Version Name" name="version_name">
-                            <p class="my-error"> {{$errors->first('version_name')}}</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <input type="text" class="form-control form-control-user"
-                            id="" aria-describedby="emailHelp"
-                            placeholder="Minimun Android Version" name="min_android_version">
-                            <p class="my-error"> {{$errors->first('min_android_version')}}</p>
-                    </div>
-
-                    <br>
-                    <input type="file" name="anroid_apk_file" id="" accept=".apk">
-                    <p class="my-error"> {{$errors->first('anroid_apk_file')}}</p>
-
-                    <br><br>
-
-                 
-                    <button class="btn btn-primary btn-user btn-block" style="width:100px;">
-                        Add Now
-                    </button>
-                </form>
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">APP RELEASES</p>
+                <h1>Add version update</h1>
             </div>
+            <a class="btn secondary" href="{{ route('admins.mobile-versions') }}">
+                <i class="fas fa-arrow-left"></i>
+                Versions
+            </a>
         </div>
-       
 
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">APK RELEASE</p>
+                    <h2>New Android version</h2>
+                    <p class="panel-subtitle">Upload a new APK and define minimum supported Android version.</p>
+                </div>
+            </div>
 
+            <form class="settings-form" action="{{ route('admins.mobile-versions.add') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+
+                <div class="settings-form-grid">
+                    <label class="form-field">
+                        <span>Version code</span>
+                        <input type="text" placeholder="Version code" name="version_code" value="{{ old('version_code') }}">
+                        @error('version_code')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+
+                    <label class="form-field">
+                        <span>Version name</span>
+                        <input type="text" placeholder="Version name" name="version_name" value="{{ old('version_name') }}">
+                        @error('version_name')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+
+                    <label class="form-field">
+                        <span>Minimum Android version</span>
+                        <input type="text" placeholder="Minimum Android version" name="min_android_version" value="{{ old('min_android_version') }}">
+                        @error('min_android_version')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+
+                    <label class="form-field">
+                        <span>APK file</span>
+                        <input type="file" name="anroid_apk_file" accept=".apk">
+                        @error('anroid_apk_file')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+                </div>
+
+                <div class="settings-form-actions">
+                    <a class="btn secondary" href="{{ route('admins.mobile-versions') }}">Cancel</a>
+                    <button class="btn primary" type="submit">
+                        <i class="fas fa-upload"></i>
+                        Publish version
+                    </button>
+                </div>
+            </form>
+        </section>
     </div>
 @endsection

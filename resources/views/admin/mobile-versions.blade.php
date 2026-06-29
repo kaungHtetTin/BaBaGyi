@@ -1,57 +1,61 @@
 @extends('admin.master')
+
 @section('content')
-
-    <style>
-       .action-button{
-            padding:3px;
-            font-size: 12px;
-            margin:3px;
-        }
-        table tr td{
-            font-size: 14px;
-        }
-    </style>
-
     <div class="container-fluid">
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Mobile App Version History</h1>
-            <a href="{{route('admins.mobile-versions.add')}}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                    class="fas fa-plus fa-sm text-white-50"></i> Add new</a>
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">APP RELEASES</p>
+                <h1>Mobile App Versions</h1>
+            </div>
+            <a class="btn primary" href="{{ route('admins.mobile-versions.add') }}">
+                <i class="fas fa-plus"></i>
+                Add version
+            </a>
         </div>
 
-        <div class="table-responsive ">
-            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Version Code</th>
-                        <th>Version Name</th>
-                        <th>Min Android Version</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tfoot>
-                    <tr>
-                        <th>Version Code</th>
-                        <th>Version Name</th>
-                        <th>Min Android Version</th>
-                        <th>Action</th>
-                    </tr>
-                </tfoot>
-                <tbody>
-                    @foreach ($mobile_versions as $version)
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">VERSION HISTORY</p>
+                    <h2>Android APK releases</h2>
+                    <p class="panel-subtitle">{{ number_format($mobile_versions->count()) }} published versions</p>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
                         <tr>
-                            <td> {{$version->version_code}} </td>
-                            <td> {{$version->version_name}}  </td>
-                            <td> {{$version->min_android_version}}</td>
-                            <td>  
-                                <a class="btn btn-primary action-button" href="{{ Storage::url('app/public/'.$version->url) }}"> Get </a>
-                            </td>
+                            <th>Version</th>
+                            <th>Code</th>
+                            <th>Minimum Android</th>
+                            <th>Action</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
+                    </thead>
+                    <tbody>
+                        @forelse ($mobile_versions as $version)
+                            <tr>
+                                <td>
+                                    <strong class="table-primary-line">{{ $version->version_name }}</strong>
+                                    <small class="table-secondary-line">APK release</small>
+                                </td>
+                                <td>{{ $version->version_code }}</td>
+                                <td>{{ $version->min_android_version }}</td>
+                                <td>
+                                    <a class="icon-btn small" href="{{ Storage::url('app/public/' . $version->url) }}"
+                                        aria-label="Download {{ $version->version_name }}" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4"><span class="muted">No mobile versions found.</span></td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 @endsection

@@ -5,15 +5,16 @@
 
 <body id="page-top">
 
+    <div class="app-root" data-theme="light" style="--color-primary: #545760">
     <!-- Page Wrapper -->
-    <div id="wrapper">
+    <div id="wrapper" class="admin-app">
 
         <!-- Sidebar -->
         @include('admin.components.side-bar')
         <!-- End of Sidebar -->
 
         <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content-wrapper" class="admin-main d-flex flex-column">
 
             <!-- Main Content -->
             <div id="content">
@@ -23,25 +24,18 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                @yield('content')
+                <div class="admin-content">
+                    @yield('content')
+                </div>
                 <!-- /.container-fluid -->
 
             </div>
             <!-- End of Main Content -->
 
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; babagyi 2024</span>
-                    </div>
-                </div>
-            </footer>
-            <!-- End of Footer -->
-
         </div>
         <!-- End of Content Wrapper -->
 
+    </div>
     </div>
     <!-- End of Page Wrapper -->
 

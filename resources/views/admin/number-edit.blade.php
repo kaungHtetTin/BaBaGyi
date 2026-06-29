@@ -1,6 +1,11 @@
 @php
-    $lottery_hour = $clock->hour<9 ? "0".$clock->hour: $clock->hour;
-    $lottery_minute = $clock->minute<9 ? "0".$clock->minute: $clock->minute;
+    $lottery_hour = $clock->hour < 10 ? '0' . $clock->hour : $clock->hour;
+    $lottery_minute = $clock->minute < 10 ? '0' . $clock->minute : $clock->minute;
+    $drawLabel = $lottery_type->type . ' ' . $lottery_hour . ':' . $lottery_minute . ' ' . ($clock->morning == 1 ? 'AM' : 'PM');
+    $backUrl = route('admin.numbers', [
+        'lottery_type_id' => $lottery_type->id,
+        'clock_id' => $clock->id,
+    ]);
 @endphp
 
 @extends('admin.master')
@@ -8,32 +13,68 @@
     <div class="container-fluid">
         @if (session('msg'))
             <div class="alert alert-success">
-                {{session('msg')}}
+                {{ session('msg') }}
             </div>
         @endif
 
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-           <h1 class="h3 mb-0 text-gray-800">
-                {{$lottery_type->type}} {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}
-                <span style="font-size: 18px;"> Edit</span>
-           </h1>
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">NUMBER CONTROL</p>
+                <h1>Edit number</h1>
+            </div>
+            <a class="btn secondary" href="{{ $backUrl }}">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
         </div>
 
-        <h1 class="h1" style="text-align: center;font-size:70px;">
-            {{$number->number}}
-        </h1>
-
-        <br><br>
-        <form style="width: 70%;margin:auto" class="user mb-3" action="{{route('admin.numbers.modify',$number->id)}}" method="POST" >
-            @csrf
-            @method("PUT")
-            <span>Sell Amount</span>
-            <div style="display: flex">
-                <input type="text" class="form-control" placeholder="Sell amount" name="sell" style="display:inline" value="{{$number->sell}}">
-                <button class="btn btn-primary" style="margin-left:5px;">Update</button>
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">SELL LIMIT</p>
+                    <h2><span class="lottery-number">{{ $number->number }}</span> <span class="clock-pill">{{ $drawLabel }}</span></h2>
+                    <p class="panel-subtitle">Update the sell amount for this number only.</p>
+                </div>
+                @if ($number->disable == 1)
+                    <span class="status status-danger"><span class="status-dot"></span>Disabled</span>
+                @else
+                    <span class="status status-success"><span class="status-dot"></span>Active</span>
+                @endif
             </div>
-            <p style="color: red;font-size:14px;">{{$errors->first('sell')}}</p>
-        </form>
+
+            <div class="number-edit-summary">
+                <div>
+                    <span>Demand amount</span>
+                    <strong>{{ number_format($number->demand) }} MMK</strong>
+                </div>
+                <div>
+                    <span>Report amount</span>
+                    <strong>{{ number_format($number->report) }} MMK</strong>
+                </div>
+            </div>
+
+            <form class="settings-form" action="{{ route('admin.numbers.modify', $number->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="settings-form-grid compact">
+                    <label class="form-field">
+                        <span>Sell amount</span>
+                        <input type="text" placeholder="Sell amount" name="sell" value="{{ old('sell', $number->sell) }}">
+                        @error('sell')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+                </div>
+
+                <div class="settings-form-actions">
+                    <a class="btn secondary" href="{{ $backUrl }}">Cancel</a>
+                    <button class="btn primary" type="submit">
+                        <i class="fas fa-save"></i>
+                        Update sell amount
+                    </button>
+                </div>
+            </form>
+        </section>
     </div>
 @endsection

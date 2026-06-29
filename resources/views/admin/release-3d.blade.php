@@ -1,35 +1,67 @@
 @extends('admin.master')
+
 @section('content')
     <div class="container-fluid">
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">3D Release </h1>
-        </div>
-        <div>
-        <div class="alert alert-warning">
-            <strong style="color: red">Important warning: </strong> This action cannot be undone. Please carefully fill the submit form. 
-        </div>
-        <form style="width: 70%;margin:auto" class="" action="{{route('admins.release-3d')}}" method="POST" >
-            @csrf
-            <div class="mb-3">
-                <label for="lottery_number">3D Lottery Number</label>
-                <input id="input_lottery_number" type="text" class="form-control" name="lottery_number">
-                <p style="color: red;font-size:14px;">{{$errors->first('lottery_number')}}</p>
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">MANUAL RELEASE</p>
+                <h1>Release 3D result</h1>
             </div>
-              
-            <button type="submit" class="btn btn-primary">Release Now</button>
-        </form>
+            <a class="btn secondary" href="{{ route('admin.index') }}">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
         </div>
 
+        <section class="panel glass release-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">RESULT ENTRY</p>
+                    <h2>MM 3D winning number</h2>
+                    <p class="panel-subtitle">Enter the confirmed 3D result before releasing it to vouchers.</p>
+                </div>
+                <span class="status status-danger"><span class="status-dot"></span>Manual mode</span>
+            </div>
+
+            <div class="release-warning">
+                <span><i class="fas fa-exclamation-triangle"></i></span>
+                <div>
+                    <strong>Release is final</strong>
+                    <p>This will mark winners, apply bonus winners, verify losing vouchers, and reset number demand.</p>
+                </div>
+            </div>
+
+            <form class="settings-form release-form" action="{{ route('admins.release-3d') }}" method="POST">
+                @csrf
+
+                <div class="settings-form-grid compact">
+                    <label class="form-field">
+                        <span>3D lottery number</span>
+                        <input id="input_lottery_number" type="text" name="lottery_number" inputmode="numeric" maxlength="3"
+                            placeholder="000" value="{{ old('lottery_number') }}">
+                        @error('lottery_number')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    </label>
+                </div>
+
+                <div class="settings-form-actions">
+                    <a class="btn secondary" href="{{ route('admin.index') }}">Cancel</a>
+                    <button class="btn danger" type="submit">
+                        <i class="fas fa-bullhorn"></i>
+                        Release result
+                    </button>
+                </div>
+            </form>
+        </section>
     </div>
+
     <script>
-        $(document).ready(()=>{
-            $('#input_lottery_number').on('input',()=>{
-                var number = $('#input_lottery_number').val();
-                if(number.length > 3){
-                    $('#input_lottery_number').val(number.substring(0, $('#input_lottery_number').val().length - 1));
-                }
-            })
-        })
+        $(document).ready(function () {
+            $('#input_lottery_number').on('input', function () {
+                var number = $(this).val().replace(/\D/g, '').slice(0, 3);
+                $(this).val(number);
+            });
+        });
     </script>
 @endsection

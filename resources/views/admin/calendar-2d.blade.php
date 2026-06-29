@@ -1,45 +1,73 @@
+@php
+    $typeLabel = $type == 3 ? 'MM 3D' : 'MM 2D';
+@endphp
+
 @extends('admin.master')
+
 @section('content')
     <div class="container-fluid">
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">MM {{$type == 3 ? "3D":"2D"}} Calendar</h1>
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">LOTTERY CALENDAR</p>
+                <h1>{{ $typeLabel }} Calendar</h1>
+            </div>
         </div>
 
-        <div>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+        <nav class="report-draw-tabs" aria-label="Calendar type navigation">
+            <a class="{{ $type == 2 ? 'active' : '' }}" href="{{ route('admin.lotteries.records', ['type' => 2]) }}">
+                <i class="fas fa-calendar-alt"></i>
+                MM 2D
+            </a>
+            <a class="{{ $type == 3 ? 'active' : '' }}" href="{{ route('admin.lotteries.records', ['type' => 3]) }}">
+                <i class="fas fa-dice-three"></i>
+                MM 3D
+            </a>
+        </nav>
+
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">RESULT HISTORY</p>
+                    <h2>{{ $typeLabel }} published results</h2>
+                    <p class="panel-subtitle">{{ number_format($records->total()) }} published result records</p>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table table-bordered" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Hour</th>
+                            <th>Clock</th>
                             <th>Number</th>
                         </tr>
                     </thead>
-                    <tfoot>
-                        <tr>
-                            <th>Date</th>
-                            <th>Hour</th>
-                            <th>Number</th>
-                        </tr>
-                    </tfoot>
                     <tbody>
-                        @foreach ($records as $record)
+                        @forelse ($records as $record)
+                            @php
+                                $hour = $record->clock->hour < 10 ? '0' . $record->clock->hour : $record->clock->hour;
+                                $minute = $record->clock->minute < 10 ? '0' . $record->clock->minute : $record->clock->minute;
+                            @endphp
                             <tr>
-                                <td>{{$record->created_at->format('Y M, d')}}</td>
                                 <td>
-                                    {{$record->clock->hour<10 ?"0".$record->clock->hour:$record->clock->hour }} :
-                                    {{$record->clock->minute<10 ?"0".$record->clock->minute:$record->clock->minute }}
-                                    {{$record->clock->morning == 1 ? "AM":"PM"}}
+                                    <strong class="table-primary-line">{{ $record->created_at->format('M d, Y') }}</strong>
+                                    <small class="table-secondary-line">{{ $record->created_at->diffForHumans() }}</small>
                                 </td>
-                                <td>{{$record->number}}</td>
+                                <td>
+                                    <span class="clock-pill">{{ $hour }}:{{ $minute }} {{ $record->clock->morning == 1 ? 'AM' : 'PM' }}</span>
+                                </td>
+                                <td><span class="lottery-number">{{ $record->number }}</span></td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="3"><span class="muted">No calendar records found.</span></td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-             {{$records->links()}}
-        </div>
+            {{ $records->links() }}
+        </section>
     </div>
 @endsection

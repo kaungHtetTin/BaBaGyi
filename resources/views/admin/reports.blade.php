@@ -1,124 +1,164 @@
 @php
-    $lottery_hour = $clock->hour<9 ? "0".$clock->hour: $clock->hour;
-    $lottery_minute = $clock->minute<9 ? "0".$clock->minute: $clock->minute;
-    $total_amount = 0;
+    $lottery_hour = $clock->hour < 9 ? '0' . $clock->hour : $clock->hour;
+    $lottery_minute = $clock->minute < 9 ? '0' . $clock->minute : $clock->minute;
+    $drawLabel = "{$lottery_type->type} {$lottery_hour}:{$lottery_minute} " . ($clock->morning == 1 ? 'AM' : 'PM');
+    $total_amount = $numbers->sum('report');
+    $reportCount = method_exists($reports, 'total') ? $reports->total() : count($reports);
+    $isDraw = fn ($lotteryTypeId, $clockId) => (int) $lottery_type->id === (int) $lotteryTypeId && (int) $clock->id === (int) $clockId;
+    $reportDrawLabel = function ($draw) {
+        $type = str_replace('Thai', 'MM', $draw->lottery_type->type);
+
+        if ((int) $draw->lottery_type_id === 3) {
+            return $type;
+        }
+
+        $hour = $draw->clock->hour < 10 ? '0' . $draw->clock->hour : $draw->clock->hour;
+        $minute = $draw->clock->minute < 10 ? '0' . $draw->clock->minute : $draw->clock->minute;
+        $period = $draw->clock->morning == 1 ? 'AM' : 'PM';
+
+        return "{$type} {$hour}:{$minute} {$period}";
+    };
 @endphp
 
 @extends('admin.master')
+
 @section('content')
-    <style>
-        .report a{
-            color:#666;
-            margin:0px;
-        }
-
-        .report:hover{
-            background: #cdd8f6;
-            color:white
-        }
-
-        
-        li{
-            padding:0px;
-        }
-    </style>
     <div class="container-fluid">
         @if (session('msg'))
             <div class="alert alert-success">
-                {{session('msg')}}
+                {{ session('msg') }}
             </div>
         @endif
         @if (session('error'))
             <div class="alert alert-danger">
-                {{session('error')}}
+                {{ session('error') }}
             </div>
         @endif
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{{$lottery_type->type}} {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}</h1>
-            @if (count($numbers)>0)
-                <a href="#" id="btn_report" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                    class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">LOTTERY REPORTING</p>
+                <h1>{{ $drawLabel }}</h1>
+            </div>
+            @if (count($numbers) > 0)
+                <button id="btn_report" type="button" class="btn primary">
+                    <i class="fas fa-download fa-sm"></i> Generate report
+                </button>
             @endif
-            
         </div>
 
-        <div>
-            <form id="form_report" action="{{route('admin.reports.save')}}" method="post">
-                @csrf
-                <input type="hidden" name="lottery_type_id" value="{{$lottery_type->id}}">
-                <input type="hidden" name="clock_id" value="{{$clock->id}}">
-            </form>
-        </div>
+        <nav class="report-draw-tabs" aria-label="Report draw navigation">
+            @foreach ($report_draws as $draw)
+                <a class="{{ $isDraw($draw->lottery_type_id, $draw->clock_id) ? 'active' : '' }}"
+                    href="{{ route('admin.reports', ['lottery_type_id' => $draw->lottery_type_id, 'clock_id' => $draw->clock_id]) }}">
+                    <i class="fas {{ $draw->lottery_type_id == 3 ? 'fa-dice-three' : 'fa-clock' }}"></i>
+                    {{ $reportDrawLabel($draw) }}
+                </a>
+            @endforeach
+        </nav>
 
-        <div class="row">
-        @if (count($numbers)>0)
-            <div class="col-lg-8 col-md-8 col-sm-6 col-xs-6">
-        @else
-            <div class="col-12">
-        @endif
-                <h4>Report History</h4>
-                @if (count($reports)<=0)
-                    <div style="text-align: center">
-                        <br><br><br>
-                        No report yet!
-                        <br><br><br>
+        <form id="form_report" action="{{ route('admin.reports.save') }}" method="post">
+            @csrf
+            <input type="hidden" name="lottery_type_id" value="{{ $lottery_type->id }}">
+            <input type="hidden" name="clock_id" value="{{ $clock->id }}">
+        </form>
+
+        <section class="report-metrics" aria-label="Report metrics">
+            <article class="metric-card glass">
+                <span><i class="fas fa-hashtag"></i></span>
+                <small>Report numbers</small>
+                <strong>{{ number_format(count($numbers)) }}</strong>
+                <p>Ready for current draw</p>
+            </article>
+            <article class="metric-card glass">
+                <span><i class="fas fa-coins"></i></span>
+                <small>Report amount</small>
+                <strong>{{ number_format($total_amount) }}</strong>
+                <p>MMK current total</p>
+            </article>
+            <article class="metric-card glass">
+                <span><i class="fas fa-history"></i></span>
+                <small>Report history</small>
+                <strong>{{ number_format($reportCount) }}</strong>
+                <p>Saved reports</p>
+            </article>
+        </section>
+
+        <section class="admin-grid">
+            <article class="panel glass {{ count($numbers) > 0 ? '' : 'wide' }}">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">REPORT ARCHIVE</p>
+                        <h2>Report history</h2>
+                        <p class="panel-subtitle">{{ number_format($reportCount) }} generated reports</p>
                     </div>
-                @endif
-                <ul class="list-group navbar-nav ">
-                    @foreach ($reports as $report)
-                        <li class="list-group-item nav-item report">
-                            <a class="nav-link " href="{{route('admin.reports.detail',$report->id)}}" style="text-decoration: none">
-                                Id - {{$report->id}} <br>
-                                Reported on {{$report->created_at->format('Y M, d H:i:s')}}
+                </div>
+
+                @if (count($reports) <= 0)
+                    <div class="info-block">
+                        <span class="muted">No report yet.</span>
+                    </div>
+                @else
+                    <div class="report-history-list">
+                        @foreach ($reports as $report)
+                            <a class="report-history-item" href="{{ route('admin.reports.detail', $report->id) }}">
+                                <span>
+                                    <strong>Report #{{ $report->id }}</strong>
+                                    <small>{{ $report->created_at->format('Y M, d H:i:s') }}</small>
+                                </span>
+                                <i class="fas fa-chevron-right muted"></i>
                             </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-            @if (count($numbers)>0)
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6">
-                    <h4>Report Now</h4>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                        @endforeach
+                    </div>
+
+                    {{ $reports->links() }}
+                @endif
+            </article>
+
+            @if (count($numbers) > 0)
+                <article class="panel glass">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">READY TO GENERATE</p>
+                            <h2>Report now</h2>
+                            <p class="panel-subtitle">{{ number_format(count($numbers)) }} numbers with demand</p>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
                             <thead>
-                                <th>Number</th>
-                                <th>Amount</th>
+                                <tr>
+                                    <th>Number</th>
+                                    <th>Amount</th>
+                                </tr>
                             </thead>
                             <tfoot>
-                                <tr>
-                                    <th style=" background:rgb(13, 183, 87);color:white">Total</th>
-                                    <th style=" background:rgb(13, 183, 87);color:white" id="total"></th>
+                                <tr class="report-total-row">
+                                    <th>Total</th>
+                                    <th>{{ number_format($total_amount) }}</th>
                                 </tr>
                             </tfoot>
                             <tbody>
                                 @foreach ($numbers as $number)
-                                    @php
-                                        $total_amount += $number->report;
-                                    @endphp
                                     <tr>
-                                        <td>{{$number->number}}</td>
-                                        <td>{{$number->report}}</td>
+                                        <td><span class="lottery-number">{{ $number->number }}</span></td>
+                                        <td><span class="money-cell">{{ number_format($number->report) }} MMK</span></td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                </div>
-             @endif
-        </div>
-
+                </article>
+            @endif
+        </section>
     </div>
 
     <script>
-        $(document).ready(()=>{
-
-            $('#total').html({{$total_amount}})
-
-            $('#btn_report').click(()=>{
+        $(document).ready(() => {
+            $('#btn_report').click(() => {
                 $('#form_report').submit();
             });
-
         });
     </script>
 @endsection

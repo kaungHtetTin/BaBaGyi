@@ -38,6 +38,8 @@ class VoucherController extends Controller
     public function voucher_2d(){
         $lottery_type_id = 2;
         $vouchers = Voucher::with('user:id,name,email,phone,balance')
+        ->with('clock:id,hour,minute,morning')
+        ->with('lottery_type:id,coefficient')
          ->where('user_id','!=',2)
         ->where('lottery_type_id',$lottery_type_id)
         ->orderBy('verified','asc')
@@ -71,6 +73,8 @@ class VoucherController extends Controller
          $lottery_type_id = 3;
 
         $vouchers = Voucher::with('user:id,name,email,phone,balance')
+        ->with('clock:id,hour,minute,morning')
+        ->with('lottery_type:id,coefficient')
         ->where('user_id','!=',2)
         ->where('lottery_type_id',3)
         ->orderBy('verified','asc')

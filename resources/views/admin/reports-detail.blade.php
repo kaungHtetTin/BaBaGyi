@@ -1,8 +1,9 @@
 @php
     $lottery_type = $report->lottery_type;
     $clock = $report->clock;
-    $lottery_hour = $clock->hour<9 ? "0".$clock->hour: $clock->hour;
-    $lottery_minute = $clock->minute<9 ? "0".$clock->minute: $clock->minute;
+    $lottery_hour = $clock->hour < 10 ? '0' . $clock->hour : $clock->hour;
+    $lottery_minute = $clock->minute < 10 ? '0' . $clock->minute : $clock->minute;
+    $drawLabel = $lottery_type->type . ' ' . $lottery_hour . ':' . $lottery_minute . ' ' . ($clock->morning == 1 ? 'AM' : 'PM');
     $total_amount = 0;
 @endphp
 
@@ -10,59 +11,67 @@
 <html lang="en">
 @include('admin.components.head')
 <body>
-    <style>
-        thead{
-            background:#4e73df;
-            color:white;
-        }
-    </style>
-    <div class="container">
-        <br><br>
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{{$lottery_type->type}} {{"$lottery_hour:$lottery_minute"}} {{$clock->morning==1?"AM":"PM"}}</h1>
-            <a id="btn_print" href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                    class="fas fa-download fa-sm text-white-50"></i> Print Now</a>
-        </div>
-        <h4 class="h4">
-            Reported On {{$report->created_at->format('Y M, d H:i:s')}}
-        </h4>
+    <div class="app-root" data-theme="light">
+        <main class="print-page">
+            <div class="admin-page-heading">
+                <div>
+                    <p class="eyebrow">SAVED REPORT</p>
+                    <h1>{{ $drawLabel }}</h1>
+                    <p class="panel-subtitle">Reported on {{ $report->created_at->format('M d, Y h:i A') }}</p>
+                </div>
+                <button id="btn_print" class="btn primary" type="button">
+                    <i class="fas fa-print"></i>
+                    Print
+                </button>
+            </div>
 
+            <section class="panel glass">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">REPORT DETAILS</p>
+                        <h2>Reported amounts</h2>
+                        <p class="panel-subtitle">{{ number_format($report->report_details->count()) }} numbers in this report</p>
+                    </div>
+                </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <th>Number</th>
-                    <th>Amount</th>
-                </thead>
-                <tfoot>
-                    <tr>
-                        <th style=" background:rgb(13, 183, 87);color:white">Total</th>
-                        <th style=" background:rgb(13, 183, 87);color:white" id="total"></th>
-                    </tr>
-                </tfoot>
-                <tbody>
-                    @foreach ($report->report_details as $detail)
-                        @php
-                            $total_amount += $detail->amount;
-                        @endphp
-                        <tr>
-                            <td>{{$detail->number->number}}</td>
-                            <td>{{$detail->amount}}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                <div class="table-wrap">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Number</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($report->report_details as $detail)
+                                @php
+                                    $total_amount += $detail->amount;
+                                @endphp
+                                <tr>
+                                    <td><span class="lottery-number">{{ $detail->number->number }}</span></td>
+                                    <td><span class="money-cell">{{ number_format($detail->amount) }} MMK</span></td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2"><span class="muted">No report detail found.</span></td>
+                                </tr>
+                            @endforelse
+                            <tr class="report-total-row">
+                                <td><strong>Total</strong></td>
+                                <td><strong>{{ number_format($total_amount) }} MMK</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
-    
+
     <script>
-        $(document).ready(()=>{
-            $('#btn_print').click(()=>{
+        $(document).ready(function () {
+            $('#btn_print').click(function () {
                 window.print();
             });
-
-            $('#total').html({{$total_amount}})
-
         });
     </script>
 </body>

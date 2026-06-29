@@ -1,100 +1,160 @@
-<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+@php
+    $topbarUser = Auth::user();
+    $topbarNameParts = preg_split('/\s+/', trim($topbarUser->name ?? 'Admin'));
+    $topbarInitials = strtoupper(substr($topbarNameParts[0] ?? 'A', 0, 1) . substr($topbarNameParts[1] ?? '', 0, 1));
+@endphp
 
-    <!-- Sidebar Toggle (Topbar) -->
-    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+<header class="admin-topbar glass">
+    <button id="sidebarToggleTop" class="icon-btn d-md-none" type="button" aria-label="Toggle sidebar">
         <i class="fa fa-bars"></i>
     </button>
 
-    <!-- Topbar Search -->
-    <form action="{{route('admin.users.search')}}"
-        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-        <div class="input-group">
-            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for user with name or email or phone"
-                aria-label="Search" aria-describedby="basic-addon2" name="search">
-            <div class="input-group-append">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search fa-sm"></i>
-                </button>
-            </div>
-        </div>
+    <form action="{{ route('admin.users.search') }}" class="global-search" method="GET">
+        <label class="search-box mb-0">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search user by name, email, or phone" aria-label="Search users" name="search">
+        </label>
     </form>
 
-    <!-- Topbar Navbar -->
-    <ul class="navbar-nav ml-auto">
+    <div class="topbar-actions">
+        <a class="icon-btn d-sm-none" href="{{ route('admin.users.search') }}" aria-label="Search">
+            <i class="fas fa-search"></i>
+        </a>
 
-        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-        <li class="nav-item dropdown no-arrow d-sm-none">
-            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-search fa-fw"></i>
-            </a>
-            <!-- Dropdown - Messages -->
-            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                aria-labelledby="searchDropdown">
-                <form class="form-inline mr-auto w-100 navbar-search">
-                    <div class="input-group">
-                        <input type="text" class="form-control bg-light border-0 small"
-                            placeholder="Search for..." aria-label="Search"
-                            aria-describedby="basic-addon2">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="button">
-                                <i class="fas fa-search fa-sm"></i>
-                            </button>
-                        </div>
+        <div class="theme-control" data-theme-control>
+            <button class="icon-btn" type="button" data-admin-theme-toggle aria-label="Theme and brand">
+                <i class="fas fa-palette"></i>
+            </button>
+            <div class="theme-popover glass">
+                <p class="eyebrow">Theme mode</p>
+                <div class="segmented-control" data-theme-mode>
+                    <button type="button" data-theme-value="light">Light</button>
+                    <button type="button" data-theme-value="dark">Dark</button>
+                </div>
+
+                <p class="eyebrow mt-3">Brand color</p>
+                <div class="brand-swatches">
+                    <button type="button" style="background:#545760" data-brand-value="#545760" aria-label="Slate"></button>
+                    <button type="button" style="background:#2874bc" data-brand-value="#2874bc" aria-label="Blue"></button>
+                    <button type="button" style="background:#168255" data-brand-value="#168255" aria-label="Green"></button>
+                    <button type="button" style="background:#b77700" data-brand-value="#b77700" aria-label="Amber"></button>
+                    <input type="color" value="#545760" data-brand-picker aria-label="Custom brand color">
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-menu" data-profile-menu>
+            <button class="profile-menu-toggle" type="button" data-profile-menu-toggle aria-expanded="false" aria-label="Profile menu">
+                @if (!empty($topbarUser->avatar_url))
+                    <img src="{{ asset($topbarUser->avatar_url) }}" alt="{{ $topbarUser->name }}">
+                @else
+                    <span>{{ $topbarInitials ?: 'A' }}</span>
+                @endif
+                <i class="fas fa-chevron-down"></i>
+            </button>
+
+            <div class="profile-popover glass">
+                <div class="profile-popover-header">
+                    @if (!empty($topbarUser->avatar_url))
+                        <img src="{{ asset($topbarUser->avatar_url) }}" alt="{{ $topbarUser->name }}">
+                    @else
+                        <span>{{ $topbarInitials ?: 'A' }}</span>
+                    @endif
+                    <div>
+                        <strong>{{ $topbarUser->name }}</strong>
+                        <small>{{ $topbarUser->email ?: 'Office admin' }}</small>
                     </div>
-                </form>
-            </div>
-        </li>
+                </div>
 
-        <!-- Nav Item - User Information -->
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link" href="{{route('admin.profile')}}">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{Auth::user()->name}}</span>
-                <img class="img-profile rounded-circle" src="{{asset(Auth::user()->avatar_url)}}">
-            </a>
-            <!-- Dropdown - User Information -->
-            {{-- <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Profile
-                </a>
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Settings
-                </a>
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Activity Log
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Logout
-                </a>
-            </div> --}}
-        </li>
-
-    </ul>
-
-</nav>
-
-<!-- Logout Modal-->
-<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                <a class="btn btn-primary" href="{{route('logout')}}">Logout</a>
+                <nav class="profile-quick-links" aria-label="Profile quick links">
+                    <a href="{{ route('admin.profile') }}">
+                        <i class="fas fa-user"></i>
+                        Profile
+                    </a>
+                    <a href="{{ route('admin.users') }}">
+                        <i class="fas fa-users"></i>
+                        Users
+                    </a>
+                    <a href="{{ route('admin.admins') }}">
+                        <i class="fas fa-user-shield"></i>
+                        Admins
+                    </a>
+                    <a href="{{ route('admin.register') }}">
+                        <i class="fas fa-user-plus"></i>
+                        Add admin
+                    </a>
+                    <a class="danger" href="{{ route('logout') }}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </nav>
             </div>
         </div>
     </div>
-</div>
+</header>
+
+<script>
+    (function () {
+        const root = document.querySelector('.app-root');
+        const control = document.querySelector('[data-theme-control]');
+        const toggle = document.querySelector('[data-admin-theme-toggle]');
+        const modeButtons = document.querySelectorAll('[data-theme-value]');
+        const brandButtons = document.querySelectorAll('[data-brand-value]');
+        const brandPicker = document.querySelector('[data-brand-picker]');
+        const profileMenu = document.querySelector('[data-profile-menu]');
+        const profileToggle = document.querySelector('[data-profile-menu-toggle]');
+
+        if (!root || !control || !toggle) return;
+
+        const setTheme = (theme) => {
+            root.setAttribute('data-theme', theme);
+            localStorage.setItem('app.theme', theme);
+            modeButtons.forEach((button) => button.classList.toggle('active', button.dataset.themeValue === theme));
+        };
+
+        const setBrand = (brand) => {
+            root.style.setProperty('--color-primary', brand);
+            localStorage.setItem('app.brand', brand);
+            if (brandPicker) brandPicker.value = brand;
+        };
+
+        setTheme(localStorage.getItem('app.theme') || 'light');
+        setBrand(localStorage.getItem('app.brand') || '#545760');
+
+        toggle.addEventListener('click', () => {
+            control.classList.toggle('open');
+            if (profileMenu && profileToggle) {
+                profileMenu.classList.remove('open');
+                profileToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        if (profileMenu && profileToggle) {
+            profileToggle.addEventListener('click', () => {
+                const isOpen = profileMenu.classList.toggle('open');
+                profileToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                control.classList.remove('open');
+            });
+        }
+
+        document.addEventListener('click', (event) => {
+            if (!control.contains(event.target)) control.classList.remove('open');
+            if (profileMenu && !profileMenu.contains(event.target)) {
+                profileMenu.classList.remove('open');
+                if (profileToggle) profileToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        modeButtons.forEach((button) => {
+            button.addEventListener('click', () => setTheme(button.dataset.themeValue));
+        });
+
+        brandButtons.forEach((button) => {
+            button.addEventListener('click', () => setBrand(button.dataset.brandValue));
+        });
+
+        if (brandPicker) {
+            brandPicker.addEventListener('input', () => setBrand(brandPicker.value));
+        }
+    })();
+</script>

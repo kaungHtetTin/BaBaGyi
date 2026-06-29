@@ -1,76 +1,92 @@
 @extends('admin.master')
+
 @section('content')
-    <style>
-        .action-button{
-            padding:3px;
-            font-size: 12px;
-            margin:3px;
-        }
-    </style>
     <div class="container-fluid">
         @if (session('msg'))
             <div class="alert alert-success">
-                {{session('msg')}}
+                {{ session('msg') }}
             </div>
         @endif
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Search Result</h1>
+
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">USER OPERATIONS</p>
+                <h1>Search results</h1>
+            </div>
+            <a class="btn secondary" href="{{ route('admin.users') }}">
+                <i class="fas fa-arrow-left"></i>
+                Users
+            </a>
         </div>
 
-         <div>
-            @if (count($users)>0)
-                
-            
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">USER DIRECTORY</p>
+                    <h2>{{ request('search') ? 'Matches for "' . request('search') . '"' : 'Search results' }}</h2>
+                    <p class="panel-subtitle">{{ number_format($users->total()) }} accounts found</p>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table table-bordered" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>Name </th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th><a href="{{route('admin.users')}}?sort=balance">Balance</a></th>
-                            <th>Joined</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tfoot>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
+                            <th>User</th>
+                            <th>Contact</th>
                             <th>Phone</th>
                             <th>Balance</th>
                             <th>Joined</th>
                             <th>Action</th>
                         </tr>
-                    </tfoot>
+                    </thead>
                     <tbody>
-                        @foreach ($users as $user)
+                        @forelse ($users as $user)
                             @if ($user->id != 2)
                                 <tr>
-                                    <td>{{$user->name}}</td>
-                                    <td>{{$user->email}}</td>
-                                    <td>{{$user->phone}}</td>
-                                    <td>{{$user->balance}}</td>
-                                    <td>{{$user->created_at->diffForHumans()}}</td>
-                                    <th>
-                                        <a class="btn btn-primary action-button"href="{{route('admin.users.transactions',$user->id)}}"> View</a>
-                                    </th>
+                                    <td>
+                                        <div class="user-cell">
+                                            <span class="user-avatar">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                                            <div>
+                                                <strong class="table-primary-line">{{ $user->name }}</strong>
+                                                <small class="table-secondary-line">User #{{ $user->id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong class="table-primary-line">{{ $user->email ?: '-' }}</strong>
+                                        <small class="table-secondary-line">{{ $user->disable ? 'Disabled account' : 'Active account' }}</small>
+                                    </td>
+                                    <td>{{ $user->phone ?: '-' }}</td>
+                                    <td><span class="money-cell">{{ number_format($user->balance) }} MMK</span></td>
+                                    <td>
+                                        <strong class="table-primary-line">{{ $user->created_at->format('M d, Y') }}</strong>
+                                        <small class="table-secondary-line">{{ $user->created_at->diffForHumans() }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="inline-actions dense-actions" aria-label="{{ $user->name }} actions">
+                                            <a class="icon-btn small" href="{{ route('admin.users.setting', $user->id) }}"
+                                                aria-label="Open user detail" title="User detail">
+                                                <i class="fas fa-user-cog"></i>
+                                            </a>
+                                            <a class="icon-btn small" href="{{ route('admin.users.transactions', $user->id) }}"
+                                                aria-label="View top ups" title="Top ups">
+                                                <i class="fas fa-coins"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endif
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6"><span class="muted">No user was found.</span></td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-            @else
-                <div>
-                    No user was found
-                </div>
-            @endif
 
-             {{$users->links()}}
-        </div>
-       
-
+            {{ $users->links() }}
+        </section>
     </div>
 @endsection

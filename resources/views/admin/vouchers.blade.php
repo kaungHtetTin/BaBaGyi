@@ -1,198 +1,239 @@
+@php
+    $voucherRows = $vouchers->getCollection();
+    $saleToday = $earning_today ?? 0;
+    $paybackToday = $give_Back_today ?? 0;
+    $pendingCount = $voucherRows->where('verified', 0)->count();
+    $winCount = $voucherRows->where('win', 1)->count();
+    $pageTitle = match ($title) {
+        '2D Vouchers' => 'MM 2D Vouchers',
+        '3D Vouchers' => 'MM 3D Vouchers',
+        default => $title,
+    };
+
+    $drawTime = function ($voucher) {
+        if (!$voucher->clock) {
+            return 'No clock';
+        }
+
+        $hour = $voucher->clock->hour > 9 ? $voucher->clock->hour : '0' . $voucher->clock->hour;
+        $minute = $voucher->clock->minute > 9 ? $voucher->clock->minute : '0' . $voucher->clock->minute;
+        $period = $voucher->clock->morning == 1 ? 'AM' : 'PM';
+
+        return "{$hour}:{$minute} {$period}";
+    };
+
+    $payAmount = function ($voucher) {
+        if ($voucher->win != 1) {
+            return null;
+        }
+
+        if ($voucher->win_amount > 0) {
+            return $voucher->win_amount;
+        }
+
+        return $voucher->amount * $voucher->lottery_type->coefficient;
+    };
+
+    $statusClass = function ($voucher) {
+        if ($voucher->win == 1) {
+            return 'status-success';
+        }
+
+        if ($voucher->verified == 1) {
+            return $voucher->bonus_win == 1 ? 'status-warning' : 'status-danger';
+        }
+
+        return 'status-neutral';
+    };
+
+    $statusLabel = function ($voucher) {
+        if ($voucher->win == 1) {
+            return 'Win';
+        }
+
+        if ($voucher->verified == 1) {
+            return $voucher->bonus_win == 1 ? 'Bonus fail' : 'Fail';
+        }
+
+        return 'Waiting';
+    };
+@endphp
 
 @extends('admin.master')
+
 @section('content')
-    <style>
-        .action-button{
-            padding:3px;
-            font-size: 12px;
-            margin:3px;
-        }
-        table tr td{
-            font-size: 14px;
-        }
-    </style>
     <div class="container-fluid">
         @if (session('msg'))
             <div class="alert alert-success">
-                {{session('msg')}}
+                {{ session('msg') }}
             </div>
         @endif
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{{$title}}</h1>
+
+        <div class="admin-page-heading">
+            <div>
+                <p class="eyebrow">LOTTERY OPERATIONS</p>
+                <h1>{{ $pageTitle }}</h1>
+            </div>
         </div>
-        <div class="row">
-            <div class="col-6">
-                <div class="alert alert-info">
-                    Lottery Sale  - <strong>{{$earning_today}}</strong>
+
+        <section class="report-metrics" aria-label="Voucher metrics">
+            <article class="metric-card glass">
+                <span><i class="fas fa-ticket-alt"></i></span>
+                <small>Lottery sale</small>
+                <strong>{{ number_format($saleToday) }}</strong>
+                <p>MMK for current draw</p>
+            </article>
+            <article class="metric-card glass">
+                <span><i class="fas fa-coins"></i></span>
+                <small>Lottery win</small>
+                <strong>{{ number_format($paybackToday) }}</strong>
+                <p>MMK payout exposure</p>
+            </article>
+            <article class="metric-card glass">
+                <span><i class="fas fa-clock"></i></span>
+                <small>Waiting</small>
+                <strong>{{ number_format($pendingCount) }}</strong>
+                <p>On this page</p>
+            </article>
+        </section>
+
+        <section class="panel glass">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">VOUCHER QUEUE</p>
+                    <h2>{{ $pageTitle }}</h2>
+                    <p class="panel-subtitle">{{ number_format($vouchers->total()) }} total vouchers · {{ number_format($winCount) }} winners on this page</p>
                 </div>
             </div>
 
-            <div class="col-6">
-                <div class="alert alert-warning">
-                    Lottery Win  - <strong>{{$give_Back_today}}</strong>
-                </div>
-            </div>
-
-        </div>
-        
-        <div>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+            <div class="table-wrap">
+                <table class="table table-bordered" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Name</th>
-                            <th>Phone</th>
+                            <th>User</th>
                             <th>Clock</th>
-                            <th>Lottery</th>
+                            <th>Number</th>
                             <th>Amount</th>
                             <th>Pay</th>
                             <th>Status</th>
                             <th>Admin</th>
                             <th>Action</th>
-                            
                         </tr>
                     </thead>
-                    <tfoot>
-                        <tr>
-                            <th>Date</th>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Clock</th>
-                            <th>Lottery</th>
-                            <th>Amount</th>
-                            <th>Pay</th>
-                            <th>Status</th>
-                            <th>Admin</th>
-                            <th>Action</th>
-                        </tr>
-                    </tfoot>
                     <tbody>
-                        @foreach ($vouchers as $voucher)
+                        @forelse ($vouchers as $voucher)
                             <tr>
-                                <td>{{$voucher->created_at->format('Y-m-d')}}</td>
-                                <td>{{$voucher->user->name}}</td>
-                                <td>{{$voucher->user->phone}}</td>
                                 <td>
-                                    {{$voucher->clock->hour>9 ? $voucher->clock->hour :"0".$voucher->clock->hour}}:
-                                    {{$voucher->clock->minute>9 ?$voucher->clock->minute :"0".$voucher->clock->minute}}
-                                    {{ $voucher->clock->morning == 1 ? "AM":"PM"}}
+                                    <strong class="table-primary-line">{{ $voucher->created_at->format('M d, Y') }}</strong>
+                                    <small class="table-secondary-line">{{ $voucher->created_at->diffForHumans() }}</small>
                                 </td>
-                                <td>{{$voucher->number}}</td>
-                                <td>{{$voucher->amount}}</td>
                                 <td>
-                                    @if ($voucher->win == 1)
-                                        @if ($voucher->win_amount > 0)
-                                            {{$voucher->win_amount}}
-                                        @else
-                                            {{$voucher->amount * $voucher->lottery_type->coefficient}}
-                                        @endif
+                                    <strong class="table-primary-line">{{ $voucher->user->name }}</strong>
+                                    <small class="table-secondary-line">{{ $voucher->user->phone ?? 'No phone' }}</small>
+                                </td>
+                                <td><span class="clock-pill">{{ $drawTime($voucher) }}</span></td>
+                                <td><span class="lottery-number">{{ $voucher->number }}</span></td>
+                                <td><span class="money-cell">{{ number_format($voucher->amount) }} MMK</span></td>
+                                <td>
+                                    @if ($payAmount($voucher))
+                                        <span class="money-cell">{{ number_format($payAmount($voucher)) }} MMK</span>
+                                    @else
+                                        <span class="muted">-</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($voucher->verified == 1)
-                                        @if ($voucher->win == 1)
-                                            <span style="color:green;font-weight:bold">Win</span>
-                                        @else
-                                             @if ($voucher->bonus_win == 1)
-                                                <span style="color:yellow;font-weight:bold">Fail</span>
+                                    <span class="status {{ $statusClass($voucher) }}">
+                                        <span class="status-dot"></span>{{ $statusLabel($voucher) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if ($voucher->verified_by != 0)
+                                        <strong>{{ $voucher->verified_by($voucher->verified_by)->name }}</strong>
+                                    @else
+                                        <span class="muted">Unassigned</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="inline-actions">
+                                        @if ($voucher->verified == 0)
+                                            @if ($voucher->win == 1)
+                                                <a class="btn primary" href="#" data-toggle="modal" data-target="#approve-modal-{{ $voucher->id }}">Paid</a>
                                             @else
-                                                <span style="color:red;font-weight:bold">Fail</span>
+                                                <a class="btn secondary" href="#" data-toggle="modal" data-target="#restore-modal-{{ $voucher->id }}">Restore</a>
                                             @endif
                                         @endif
-                                    @else
-                                        @if ($voucher->win == 1)
-                                            <span style="color:green;font-weight:bold">Win</span>
-                                        @else
-                                            <span style="color:gray;font-weight:bold">Waiting</span>
+
+                                        @if ($voucher->verified_by != 0)
+                                            <span class="status status-success"><span class="status-dot"></span>Paid</span>
                                         @endif
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($voucher->verified_by != 0)
-                                         {{$voucher->verified_by($voucher->verified_by)->name}}
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($voucher->verified == 0)
-                                        @if ($voucher->win == 1)
-                                            <a class="btn btn-primary action-button"href="#" data-toggle="modal" data-target="#approve-modal-{{$voucher->id}}"> Paid</a>
-                                        @else
-                                            <a class="btn btn-warning action-button"href="#" data-toggle="modal" data-target="#restore-modal-{{$voucher->id}}"> Restore</a>
+
+                                        @if ($voucher->win == 0 && $voucher->verified == 1)
+                                            <a class="btn secondary" href="{{ route('admin.vouchers.edit', $voucher->id) }}">Edit</a>
                                         @endif
-                                        
-                                    @endif
-
-                                    @if ($voucher->verified_by != 0)
-                                        <span style="color:green;"><i class="fas fa-check-circle fa-fw"></i> Paid</span>
-                                       
-                                    @endif
-
-                                    @if($voucher->win == 0 && $voucher->verified == 1 ) 
-                                            <a class="btn btn-secondary action-button" href="{{route('admin.vouchers.edit',$voucher->id)}}"> Edit</a>
-                                    @endif
-
-                                   
+                                    </div>
                                 </td>
-
-                                <div class="modal fade" id="approve-modal-{{$voucher->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="">Approve Voucher</h5>
-                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">×</span>
-                                                </button>
-                                            </div>
-                                            <div class="alert alert-success">
-                                                Do you really want to approve?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                <form action="{{route('admin.vouchers.approve',$voucher->id)}}" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button class="btn btn-primary">Paid</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                 <div class="modal fade" id="restore-modal-{{$voucher->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="">Restore Voucher</h5>
-                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">×</span>
-                                                </button>
-                                            </div>
-                                            <div class="alert alert-warning">
-                                                Do you really want to restore voucher and refund to user's balance?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                <form action="{{route('admin.vouchers.delete',$voucher->id)}}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-primary">Restore</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="9"><span class="muted">No vouchers found.</span></td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-            {{$vouchers->links()}}
+
+            {{ $vouchers->links() }}
+        </section>
+    </div>
+
+    @foreach ($vouchers as $voucher)
+        <div class="modal fade" id="approve-modal-{{ $voucher->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Mark Voucher Paid</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">Pay winning voucher <strong>{{ $voucher->number }}</strong> for <strong>{{ $voucher->user->name }}</strong>?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <form action="{{ route('admin.vouchers.approve', $voucher->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <button class="btn primary">Paid</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        
-    </div>
+        <div class="modal fade" id="restore-modal-{{ $voucher->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Restore Voucher</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">Restore voucher <strong>{{ $voucher->number }}</strong> and refund <strong>{{ number_format($voucher->amount) }} MMK</strong> to the user's balance?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <form action="{{ route('admin.vouchers.delete', $voucher->id) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn primary">Restore</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 @endsection
