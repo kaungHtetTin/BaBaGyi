@@ -1,96 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Admin - Login</title>
-
-    <!-- Custom fonts for this template-->
-    <link href="{{asset('vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="{{asset('css/sb-admin-2.min.css')}}" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Admin login &middot; Ba Ba Gyi</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/ic_launcher.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Myanmar:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/admin-flow.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/admin-login.css') }}?v={{ filemtime(public_path('css/admin-login.css')) }}" rel="stylesheet">
 </head>
+<body class="app-root admin-login" data-theme="light" data-density="compact">
+    <script>
+        try {
+            document.body.dataset.theme = localStorage.getItem('app.theme') === 'dark' ? 'dark' : 'light';
+            const brand = localStorage.getItem('app.brand');
+            if (/^#[0-9a-f]{6}$/i.test(brand || '')) document.body.style.setProperty('--color-primary', brand);
+        } catch (error) { /* Use the default theme when storage is unavailable. */ }
+    </script>
 
-<body class="bg-gradient-primary">
+    <header class="login-header">
+        <div class="login-brand">
+            <img src="{{ asset('img/ic_launcher.png') }}" alt="" width="36" height="36">
+            <div><strong>Ba Ba Gyi</strong><span>Office admin</span></div>
+        </div>
+        <button class="login-theme" type="button" id="login-theme" aria-label="Switch to dark theme" aria-pressed="false">
+            <i class="fas fa-moon" aria-hidden="true"></i>
+            <span>Dark mode</span>
+        </button>
+    </header>
 
-    <div class="container">
-        <!-- Outer Row -->
-        <div class="row justify-content-center">
-
-            <div class="col-xl-10 col-lg-12 col-md-9">
-
-                <div class="card o-hidden border-0 shadow-lg my-5">
-                    <div class="card-body p-0">
-                        <!-- Nested Row within Card Body -->
-                        <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-                            <div class="col-lg-6">
-                                <div class="p-5">
-                                    <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back! Admin</h1>
-                                    </div>
-                                    <form class="user" action="{{route('admin.login')}}" method="POST">
-                                        @csrf
-                                        <div class="form-group">
-                                            <input type="email" class="form-control form-control-user"
-                                                id="exampleInputEmail" aria-describedby="emailHelp"
-                                                placeholder="Enter Email Address..." name="email">
-                                            
-                                        </div>
-                                        <div class="form-group">
-                                            <input type="password" class="form-control form-control-user"
-                                                id="exampleInputPassword" placeholder="Password" name="password">
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="custom-control custom-checkbox small">
-                                                <input type="checkbox" class="custom-control-input" id="customCheck" name="remember">
-                                                <label class="custom-control-label" for="customCheck">Remember
-                                                    Me</label>
-                                            </div>
-                                        </div>
-                                        <div class="error" style="margin-top: 7px;">
-                                            {{$errors->first('email')}}
-                                        </div>
-                                        <button class="btn btn-primary btn-user btn-block">
-                                            Login
-                                        </button>
-                                    </form>
-                                    <hr>
-                                    <div class="text-center">
-                                        <a class="small" href="{{route('admin.register')}}">Create an Account!</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+    <main class="login-main">
+        <section class="login-panel" aria-labelledby="login-title">
+            <div class="login-heading">
+                <span class="login-symbol" aria-hidden="true"><i class="fas fa-user-shield"></i></span>
+                <p class="eyebrow">ADMIN CONSOLE</p>
+                <h1 id="login-title">Welcome back</h1>
+                <p>Sign in to your Ba Ba Gyi admin account.</p>
             </div>
 
-        </div>
+            @if (session('status'))
+                <p class="login-status" role="status">{{ session('status') }}</p>
+            @endif
 
-    </div>
+            <form class="login-form" action="{{ route('admin.login') }}" method="POST">
+                @csrf
+                <div class="login-field">
+                    <label for="login-email">Email address</label>
+                    <input type="email" id="login-email" name="email" value="{{ old('email') }}"
+                        placeholder="you@example.com" autocomplete="username" autocapitalize="none" spellcheck="false" required
+                        @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
+                    @error('email')
+                        <p class="login-error" id="email-error" role="alert">{{ $message }}</p>
+                    @enderror
+                </div>
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="{{asset('vendor/jquery/jquery.min.js')}}"></script>
-    <script src="{{asset('vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+                <div class="login-field">
+                    <label for="login-password">Password</label>
+                    <div class="login-password">
+                        <input type="password" id="login-password" name="password" placeholder="Enter your password"
+                            autocomplete="current-password" required
+                            @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
+                        <button type="button" id="login-password-toggle" aria-label="Show password" aria-pressed="false" aria-controls="login-password" hidden>
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    @error('password')
+                        <p class="login-error" id="password-error" role="alert">{{ $message }}</p>
+                    @enderror
+                </div>
 
-    <!-- Core plugin JavaScript-->
-    <script src="{{asset('vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+                <label class="login-remember" for="login-remember">
+                    <input type="checkbox" id="login-remember" name="remember" value="1" @checked(old('remember'))>
+                    <span>Remember me</span>
+                </label>
 
-    <!-- Custom scripts for all pages-->
-    <script src="{{asset('js/sb-admin-2.min.js')}}"></script>
+                <button class="login-submit" type="submit">
+                    <span>Sign in</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
 
+            <p class="login-help">Need access? Contact your administrator.</p>
+        </section>
+    </main>
+
+    <footer class="login-footer">&copy; {{ date('Y') }} Ba Ba Gyi <span aria-hidden="true">&middot;</span> Office admin</footer>
+
+    <script>
+        (function () {
+            const themeButton = document.getElementById('login-theme');
+            const updateThemeButton = () => {
+                const dark = document.body.dataset.theme === 'dark';
+                themeButton.setAttribute('aria-pressed', String(dark));
+                themeButton.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+                themeButton.querySelector('i').className = dark ? 'fas fa-sun' : 'fas fa-moon';
+                themeButton.querySelector('span').textContent = dark ? 'Light mode' : 'Dark mode';
+            };
+            updateThemeButton();
+            themeButton.addEventListener('click', () => {
+                const theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+                document.body.dataset.theme = theme;
+                try { localStorage.setItem('app.theme', theme); } catch (error) { }
+                updateThemeButton();
+            });
+
+            const password = document.getElementById('login-password');
+            const passwordButton = document.getElementById('login-password-toggle');
+            passwordButton.hidden = false;
+            passwordButton.addEventListener('click', () => {
+                const visible = password.type === 'password';
+                password.type = visible ? 'text' : 'password';
+                passwordButton.setAttribute('aria-pressed', String(visible));
+                passwordButton.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+                passwordButton.querySelector('i').className = visible ? 'fas fa-eye-slash' : 'fas fa-eye';
+            });
+
+            document.querySelector('.login-form').addEventListener('submit', () => {
+                const button = document.querySelector('.login-submit');
+                button.disabled = true;
+                button.querySelector('span').textContent = 'Signing in\u2026';
+            });
+            window.addEventListener('pageshow', () => {
+                const button = document.querySelector('.login-submit');
+                button.disabled = false;
+                button.querySelector('span').textContent = 'Sign in';
+            });
+        })();
+    </script>
 </body>
-
 </html>

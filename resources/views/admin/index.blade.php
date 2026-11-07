@@ -88,10 +88,18 @@
 
                     <div class="info-block warning">
                         <h3>Results</h3>
-                        <table class="mini-table">
+                        <table class="mini-table" aria-label="Thai 2D results">
+                            <tr>
+                                <td>09:30 AM</td>
+                                <td><strong id="2d_result_num_0930">--</strong></td>
+                            </tr>
                             <tr>
                                 <td>12:01 PM</td>
                                 <td><strong id="2d_result_num_1">--</strong></td>
+                            </tr>
+                            <tr>
+                                <td>02:00 PM</td>
+                                <td><strong id="2d_result_num_1400">--</strong></td>
                             </tr>
                             <tr>
                                 <td>04:30 PM</td>
@@ -312,15 +320,59 @@
     </div>
 
     <script>
+        let thai2DHistoryDate = '';
+        let thai2DHistoryLoading = false;
+
         $(document).ready(() => {
             fetchThai2DNumber();
+            fetchThai2DSavedResults();
             fetchThai3DNumber();
             setInterval(() => {
                 fetchThai2DNumber();
+                fetchThai2DSavedResults();
                 fetchThai3DNumber();
                 notify();
             }, 5000);
         });
+
+        function fetchThai2DSavedResults() {
+            const parts = Object.fromEntries(new Intl.DateTimeFormat('en', {
+                timeZone: 'Asia/Yangon', year: 'numeric', month: '2-digit', day: '2-digit'
+            }).formatToParts(new Date()).map(part => [part.type, part.value]));
+            const date = `${parts.year}-${parts.month}-${parts.day}`;
+            const targets = { '09:30': '#2d_result_num_0930', '14:00': '#2d_result_num_1400' };
+
+            if (thai2DHistoryDate !== date) {
+                thai2DHistoryDate = date;
+                Object.values(targets).forEach(target => $(target).text('--'));
+            }
+            if (thai2DHistoryLoading) return;
+            thai2DHistoryLoading = true;
+
+            $.ajax({
+                url: @json(url('/api/lotteries/records')),
+                type: 'GET',
+                dataType: 'json',
+                timeout: 10000,
+                data: { type: 2, year: parts.year, month: parts.month },
+                success: function(records) {
+                    if (thai2DHistoryDate !== date || !Array.isArray(records)) return;
+                    Object.values(targets).forEach(target => $(target).text('--'));
+                    records.forEach(record => {
+                        if (record.date === date && targets[record.draw_time]
+                            && typeof record.number === 'string' && /^[0-9]{2}$/.test(record.number)) {
+                            $(targets[record.draw_time]).text(record.number);
+                        }
+                    });
+                },
+                error: function() {
+                    console.error('Unable to refresh Thai 2D saved results.');
+                },
+                complete: function() {
+                    thai2DHistoryLoading = false;
+                }
+            });
+        }
 
         function notify() {
             $.ajax({

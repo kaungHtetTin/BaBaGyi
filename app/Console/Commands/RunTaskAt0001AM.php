@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Holiday;
 use App\Models\LotteryType;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class RunTaskAt0001AM extends Command
 {
@@ -20,7 +21,7 @@ class RunTaskAt0001AM extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Reset all lotteries to automatic release and update Thai 2D holiday availability';
 
     /**
      * Execute the console command.
@@ -29,19 +30,16 @@ class RunTaskAt0001AM extends Command
      */
     public function handle()
     {
+        $today = now('Asia/Yangon');
 
-        $holidays = Holiday::where('day',date('d'))
-        ->where('month',date('m'))
-        ->get();
+        DB::transaction(function () use ($today) {
+            LotteryType::query()->update(['release_mode' => 1]);
 
-        $lottery = LotteryType::find(2);
-        if(count($holidays)>0){
-            $lottery->open = 0;
-        }else{
-            $lottery->open = 1;
-        }
+            $isHoliday = Holiday::where('day', $today->day)
+                ->where('month', $today->month)->exists();
 
-        $lottery->save();
+            LotteryType::whereKey(2)->update(['open' => ! $isHoliday]);
+        });
 
         return Command::SUCCESS;
     }
