@@ -81,6 +81,7 @@ Route::post('/register',[AuthController::class,'register']);
 Route::post('/check-user',[AuthController::class,'checkUser']);
 
 Route::get('/lotteries/records',[LotteryController::class,'records']);
+Route::get('/lotteries/calendar',[LotteryController::class,'calendar']);
 Route::get('/lotteries/3d-records',[LotteryController::class,'_3d_records']);
 Route::get('/lottery-types/{id}/clocks',[LotteryTypeController::class,'clocks']);
 

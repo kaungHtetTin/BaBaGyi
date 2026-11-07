@@ -16,6 +16,15 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('inspire')->hourly();
+
+        // History only: these commands do not settle vouchers or reset numbers.
+        foreach (['09:30', '14:00'] as $time) {
+            $schedule->command('lottery:record-thai-2d', [$time])
+                ->timezone('Asia/Yangon')
+                ->weekdays()
+                ->dailyAt($time)
+                ->withoutOverlapping(5);
+        }
         
         $schedule->command('command:runat1201pm')->dailyAt('12:01');
         $schedule->command('command:runat430pm')->dailyAt('16:30');
