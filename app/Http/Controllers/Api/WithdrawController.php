@@ -11,43 +11,45 @@ use App\Models\User;
 class WithdrawController extends Controller
 {
     public function store(Request $req){
-        $user = User::find($req->user()->id);
-        $req->validate([
-            'banking_id'=>'required',
-            'method'=>'required',
-            'account_name'=>'required',
-            'amount'=>'required',
-        ]);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($req) {
+            $user = User::whereKey($req->user()->id)->lockForUpdate()->firstOrFail();
+            $req->validate([
+                'banking_id'=>'required',
+                'method'=>'required',
+                'account_name'=>'required',
+                'amount'=>'required|integer|min:1',
+            ]);
 
-        $banking = Banking::find($req->banking_id);
-        if(!$banking){
-            $res = [
-                'status'=>'fail',
-                'msg'=>'Unsupported banking',      
-            ];
-            return response()->json($res);
-        }
-    
-      
-        if($user->balance < $req->amount){
-            $res = [
-                'status'=>'fail',
-                'msg'=>'လက်ကျန်ငွေမလုံလောက်ပါ',      
-            ];
-            return response()->json($res);
-        }
+            $banking = Banking::find($req->banking_id);
+            if(!$banking){
+                $res = [
+                    'status'=>'fail',
+                    'msg'=>'Unsupported banking',
+                ];
+                return response()->json($res);
+            }
 
-        $withdraw = new Withdraw();
-        $withdraw->user_id = $user->id;
-        $withdraw->banking_id = $req->banking_id;
-        $withdraw->method = $req->method;
-        $withdraw->account_name = $req->account_name;
-        $withdraw->amount = $req->amount;
-        $withdraw->save();
 
-        $user->balance = $user->balance - $req->amount;
-        $user->save();
+            if($user->balance < $req->amount){
+                $res = [
+                    'status'=>'fail',
+                    'msg'=>'လက်ကျန်ငွေမလုံလောက်ပါ',
+                ];
+                return response()->json($res);
+            }
 
-        return response()->json(['status'=>'success']);
+            $withdraw = new Withdraw();
+            $withdraw->user_id = $user->id;
+            $withdraw->banking_id = $req->banking_id;
+            $withdraw->method = $req->method;
+            $withdraw->account_name = $req->account_name;
+            $withdraw->amount = $req->amount;
+            $withdraw->save();
+
+            $user->balance = $user->balance - $req->amount;
+            $user->save();
+
+            return response()->json(['status'=>'success']);
+        });
     }
 }

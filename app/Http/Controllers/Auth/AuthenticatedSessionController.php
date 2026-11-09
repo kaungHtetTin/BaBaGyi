@@ -44,7 +44,7 @@ class AuthenticatedSessionController extends Controller
         Cookie::queue('api_auth_token', $api_token);
        
 
-        return redirect()->route('index');
+        return redirect()->route($user->admin == 1 ? 'admin.index' : 'index');
     }
 
     /**

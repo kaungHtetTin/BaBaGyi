@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Lottery;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class RemoteNumberController extends Controller
 {
@@ -36,12 +37,13 @@ class RemoteNumberController extends Controller
 
     public function get3DNumber(){
 
-        $day = date('d');
+        $day = now('Asia/Yangon')->day;
+        $response = ['number' => 'Soon', 'status' => 'closed'];
 
         if($day == 1 || $day == 16){
             
-            $response = file_get_contents("https://www.calamuseducation.com/api-3d.php");
-            $result = json_decode($response,true);
+            $result = Http::acceptJson()->connectTimeout(5)->timeout(15)
+                ->get("https://www.calamuseducation.com/api-3d.php")->throw()->json();
             $win_num = $result['number'];
 
             $response['number'] = $win_num;
@@ -52,8 +54,8 @@ class RemoteNumberController extends Controller
             $response['status'] = "closed";
         }
 
-        $lottery = Lottery::where(DB::raw("MONTH(created_at)"),date('m'))
-        ->where(DB::raw("YEAR(created_at)"),date('Y'))
+        $lottery = Lottery::whereMonth('created_at', now('Asia/Yangon')->month)
+        ->whereYear('created_at', now('Asia/Yangon')->year)
         ->where('lottery_type_id',3)
         ->get();
         if(count($lottery)>0){

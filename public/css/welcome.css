@@ -844,3 +844,12 @@ h1>span {
         transform:none;
     }
 }
+.web-app-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+    color: var(--gold);
+    font-size: 13px;
+    padding: 8px 0;
+}

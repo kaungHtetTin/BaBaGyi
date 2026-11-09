@@ -28,8 +28,8 @@ class TransactionController extends Controller
         $transaction->save();
 
         $payment_method = PaymentMethod::find($req->payment_method_id);
-        $payment_method->new_payment_count = $payment_method->new_payment_count + 1;
-        $payment_method->save();
+        $payment_method->increment('new_payment_count');
+        $payment_method->refresh();
 
         return response()->json([
             'payment_method'=>$payment_method,

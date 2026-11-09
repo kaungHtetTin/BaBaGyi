@@ -41,7 +41,10 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('admin')->group(function (){
   
-        Route::get('/',[LayoutController::class,'index'])->name('admin.index');
+        Route::get('/', function () {
+            return redirect()->route('admin.index');
+        });
+        Route::get('/dashboard',[LayoutController::class,'index'])->name('admin.index');
 
         Route::get('/register',function(){
         return view('admin.register',[

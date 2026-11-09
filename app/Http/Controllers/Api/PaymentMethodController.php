@@ -16,10 +16,10 @@ class PaymentMethodController extends Controller
         ]);
         $payment_method = PaymentMethod::with('banking:id,bank,icon_url')
         ->where('banking_id',$req->banking_id)
-        ->orderBy(DB::raw("rand()"))
-        ->limit(1)->get();
-        
-        $payment_method = $payment_method[0];
+        ->where('disable', false)
+        ->inRandomOrder()->first();
+
+        abort_unless($payment_method, 404, 'No payment account is currently available for this banking.');
         return $payment_method;
     }
 

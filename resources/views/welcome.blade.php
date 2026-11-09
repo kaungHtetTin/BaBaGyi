@@ -41,6 +41,7 @@
                             <span class="download-arrow" aria-hidden="true">↗</span>
                         </a>
                         <p class="download-note" id="download-note"><svg width="16" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 3-1-2 .8-.5L8 2.7a10 10 0 0 1 8 0L17.2.5l.8.5-1 2a7 7 0 0 1 3 5H4a7 7 0 0 1 3-5ZM8 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM4 9h16v9a2 2 0 0 1-2 2v3h-3v-3H9v3H6v-3a2 2 0 0 1-2-2V9ZM0 9h3v10H0V9Zm21 0h3v10h-3V9Z"/></svg> Android APK <span aria-hidden="true">·</span> တိုက်ရိုက်ဒေါင်းလုဒ်</p>
+                        <a class="web-app-link" href="{{ url('/app') }}/">Web app အသုံးပြုရန် <span aria-hidden="true">↗</span></a>
                         @if (session('download_status'))
                             <p class="download-status" role="status">{{ session('download_status') }}</p>
                         @endif
