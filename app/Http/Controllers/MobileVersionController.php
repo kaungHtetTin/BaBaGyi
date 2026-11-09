@@ -33,12 +33,12 @@ class MobileVersionController extends Controller
         $file=$_FILES['anroid_apk_file']['name'];
         $file_loc=$_FILES['anroid_apk_file']['tmp_name'];
         $folder="../storage/app/public/apks/";
-        if(move_uploaded_file($file_loc,$folder."babagyi-".$req->version_name.".apk")){
+        if(move_uploaded_file($file_loc,$folder."mastergyi-".$req->version_name.".apk")){
             $mobile_version = new MobileVersion();
             $mobile_version->version_code = $req->version_code;
             $mobile_version->version_name = $req->version_name;
             $mobile_version->min_android_version = $req->min_android_version;
-            $mobile_version->url = "apks/babagyi-".$req->version_name.".apk";
+            $mobile_version->url = "apks/mastergyi-".$req->version_name.".apk";
             $mobile_version->save();
 
             return back()->with('msg', 'The latest version was successfully published.');

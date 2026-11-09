@@ -45,9 +45,9 @@
 
 <aside class="admin-sidebar glass" id="accordionSidebar">
     <a class="admin-brand" href="{{ route('admin.index') }}">
-        <img src="{{ asset('img/ic_launcher.png') }}" alt="Ba Ba Gyi">
+        <img src="{{ asset('img/master-gyi-logo-small.webp') }}" alt="Master Gyi">
         <div>
-            <strong>Ba Ba Gyi</strong>
+            <strong>Master Gyi</strong>
             <small>Office admin</small>
         </div>
     </a>

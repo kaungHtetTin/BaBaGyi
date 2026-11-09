@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <title>Admin login &middot; Ba Ba Gyi</title>
-    <link rel="icon" type="image/png" href="{{ asset('img/ic_launcher.png') }}">
+    <title>Admin login &middot; Master Gyi</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/master-gyi-favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Myanmar:wght@400;600;700&display=swap" rel="stylesheet">
@@ -24,8 +24,8 @@
 
     <header class="login-header">
         <div class="login-brand">
-            <img src="{{ asset('img/ic_launcher.png') }}" alt="" width="36" height="36">
-            <div><strong>Ba Ba Gyi</strong><span>Office admin</span></div>
+            <img src="{{ asset('img/master-gyi-logo-small.webp') }}" alt="" width="36" height="36">
+            <div><strong>Master Gyi</strong><span>Office admin</span></div>
         </div>
         <button class="login-theme" type="button" id="login-theme" aria-label="Switch to dark theme" aria-pressed="false">
             <i class="fas fa-moon" aria-hidden="true"></i>
@@ -39,7 +39,7 @@
                 <span class="login-symbol" aria-hidden="true"><i class="fas fa-user-shield"></i></span>
                 <p class="eyebrow">ADMIN CONSOLE</p>
                 <h1 id="login-title">Welcome back</h1>
-                <p>Sign in to your Ba Ba Gyi admin account.</p>
+                <p>Sign in to your Master Gyi admin account.</p>
             </div>
 
             @if (session('status'))
@@ -87,7 +87,7 @@
         </section>
     </main>
 
-    <footer class="login-footer">&copy; {{ date('Y') }} Ba Ba Gyi <span aria-hidden="true">&middot;</span> Office admin</footer>
+    <footer class="login-footer">&copy; {{ date('Y') }} Master Gyi <span aria-hidden="true">&middot;</span> Office admin</footer>
 
     <script>
         (function () {

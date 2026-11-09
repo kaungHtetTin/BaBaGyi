@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WelcomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,9 +30,8 @@ Route::get('/guide/withdraw',function(){
 });
 
 
-Route::get('/',function(){
-   return redirect()->route('admin.index');
-})->name('index');
+Route::get('/', [WelcomeController::class, 'index'])->name('index');
+Route::get('/download', [WelcomeController::class, 'download'])->name('app.download');
 
 
 require __DIR__.'/auth.php';

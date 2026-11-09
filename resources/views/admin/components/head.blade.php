@@ -6,8 +6,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Admin - {{$page_name}}</title>
-    <link rel="icon" type="image/png" href="{{asset('img/ic_launcher.png')}}">
+    <title>Master Gyi | Admin - {{$page_name}}</title>
+    <link rel="icon" type="image/png" href="{{asset('img/master-gyi-favicon.png')}}">
 
     <!-- Custom fonts for this template-->
     <link href="{{asset('vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
