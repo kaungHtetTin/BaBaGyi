@@ -95,13 +95,13 @@ php artisan optimize:clear
 
 Set `APP_URL` to the existing public base URL, retain `APP_KEY`, use production settings and HTTPS, and keep the database/session storage available. Ensure `public/storage` points to `storage/app/public` (`php artisan storage:link` if it is missing). Do not reseed or replace the existing production database.
 
-For the currently referenced live installation, the client URL after deployment is:
+For the intended live domain, the client URL after deployment is:
 
 ```text
-https://www.margomanpower.com/babagyi/public/app
+https://www.mastergyi.com/app
 ```
 
-The deployment has **not** been performed from this workspace. No live purchase, transfer or account deletion was used during verification.
+See [the deployment guide](deployment.md) for the production environment template and server setup. The deployment has **not** been performed from this workspace. No live purchase, transfer or account deletion was used during verification.
 
 ## Verification
 
