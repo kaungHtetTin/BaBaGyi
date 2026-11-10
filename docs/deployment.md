@@ -83,6 +83,48 @@ binary:
 Check `php artisan schedule:list`. The application uses `Asia/Yangon` for its
 scheduled lottery tasks. Remove any duplicate scheduler for the same installation.
 
+The scheduler also runs a heartbeat callback every minute that writes
+`Scheduler heartbeat: schedule:run is running.` to `storage/logs/laravel.log`.
+Set `LOG_LEVEL=info` in the live `.env` and refresh cached configuration with
+`php artisan config:cache` so these informational entries are recorded. This
+confirms that Laravel's scheduler is running; it does not prove that every lottery
+task succeeded. Merely running `schedule:list` does not write the heartbeat.
+
+### Scheduler logs on Hostinger
+
+To record every cron invocation, upload `scripts/run-scheduler.sh` and replace
+the existing cron command with this **Custom** command in hPanel:
+
+```bash
+/bin/bash /home/u727911572/domains/mastergyi.com/public_html/scripts/run-scheduler.sh
+```
+
+Set all five schedule fields to `*` (every minute). Keep only this one cron job
+for the scheduler. The script defaults to `/usr/bin/php`; if the site needs a
+different PHP CLI binary, pass its absolute path as the script's first argument.
+
+The script appends a timestamp, scheduler output, and process exit status to
+`storage/logs/scheduler-YYYY-MM-DD.log`, using the Myanmar date and time. Files
+are created when cron runs and are not automatically deleted. Monitor disk usage
+and archive or remove older scheduler logs as needed.
+
+Check today's output over SSH:
+
+```bash
+cd /home/u727911572/domains/mastergyi.com/public_html
+tail -n 100 "storage/logs/scheduler-$(TZ=Asia/Yangon date +%F).log"
+```
+
+New `Scheduler started` entries each minute confirm cron is reaching the script.
+`No scheduled commands are ready to run` is normal between task times. Inspect
+each task's `DONE`/`FAIL` output and `storage/logs/laravel.log` for task errors;
+the scheduler process can exit with zero even when an individual task fails.
+The wrapper also captures PHP startup errors that occur before Laravel boots.
+
+If the daily log is absent or stale, check hPanel's cron output, the configured
+command and frequency, and write permissions on `storage/logs`. A started entry
+without a matching finished entry may mean a task is still running or was stopped.
+
 ## Verification after deployment
 
 - Confirm `/`, `/app`, and `/admin/login` load over HTTPS.

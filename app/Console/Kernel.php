@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -15,6 +16,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        $schedule->call(function () {
+            Log::channel('single')->info('Scheduler heartbeat: schedule:run is running.', [
+                'time' => now('Asia/Yangon')->toDateTimeString(),
+                'timezone' => 'Asia/Yangon',
+            ]);
+        })->everyMinute()->name('scheduler-heartbeat');
+
         $schedule->command('inspire')->hourly();
 
         // History only: these commands do not settle vouchers or reset numbers.
