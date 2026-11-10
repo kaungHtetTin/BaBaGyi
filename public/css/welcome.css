@@ -177,6 +177,14 @@ h1>span {
     margin:0 0 30px;
 }
 
+.description p {
+    margin:0 0 12px;
+}
+
+.description p:last-child {
+    margin-bottom:0;
+}
+
 .download-button {
     display:inline-flex;
     align-items:center;

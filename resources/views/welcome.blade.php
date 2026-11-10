@@ -32,7 +32,11 @@
                     <p class="eyebrow"><span aria-hidden="true">✦</span> WELCOME TO MASTER GYI</p>
                     <h1 id="welcome-title">မင်္ဂလာပါ။<br><span>မာစတာကြီး</span> မှ<br>ကြိုဆိုပါတယ်။</h1>
                     <p class="intro">သင့်ဖုန်းထဲက <span class="latin">2D · 3D</span> ကမ္ဘာလေး။</p>
-                    <p class="description">မာစတာကြီး ဆော့ဝဲကို ဒေါင်းလုဒ်ရယူပြီး<br class="desktop-break"> သင့် Android ဖုန်းမှာ အလွယ်တကူ အသုံးပြုလိုက်ပါ။</p>
+                    <div class="description">
+                        <p>Agent မလို ကိုယ်တိုင် Free အကောင့်ဖွင့်နိုင်သည်။</p>
+                        <p>နိုင်ငွေကို အလျင်မြန်ဆုံး system ဖြင့် အကောင့်ထဲသို့ တိုက်ရိုက်ထည့်ပေးသည်။</p>
+                        <p>အခုပဲ အခမဲ့ အကောင့်ဖွင့်ပြီး <span class="latin">MasterGyi</span> ဆော့ဝဲမှာ ကစားလိုက်ကြရအောင်ရှင့်။</p>
+                    </div>
 
                     <div class="download-area" id="download">
                         <a class="download-button" href="{{ route('app.download') }}" aria-describedby="download-note">
