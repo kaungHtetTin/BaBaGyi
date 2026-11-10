@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\MobileVersion;
+use Illuminate\Validation\ValidationException;
 
 class MobileVersionController extends Controller
 {
@@ -25,27 +26,33 @@ class MobileVersionController extends Controller
 
         $req->validate([
             'version_code'=>'required|integer',
-            'version_name'=>'required',
+            'version_name'=>['required', 'string', 'max:80', 'regex:/\A[a-zA-Z0-9][a-zA-Z0-9._-]*\z/'],
             'min_android_version'=>'required|integer',
-            'anroid_apk_file'=>'required',
+            'anroid_apk_file'=>['bail', 'required', 'file', function ($attribute, $value, $fail) {
+                if (strtolower($value->getClientOriginalExtension()) !== 'apk') {
+                    $fail('Please upload an Android APK file.');
+                }
+            }],
         ]);
 
-        $file=$_FILES['anroid_apk_file']['name'];
-        $file_loc=$_FILES['anroid_apk_file']['tmp_name'];
-        $folder="../storage/app/public/apks/";
-        if(move_uploaded_file($file_loc,$folder."mastergyi-".$req->version_name.".apk")){
+        // The public disk resolves an absolute path and creates missing directories.
+        $path = $req->file('anroid_apk_file')->storeAs(
+            'apks', 'mastergyi-'.$req->version_name.'.apk', 'public'
+        );
+        if ($path !== false) {
             $mobile_version = new MobileVersion();
             $mobile_version->version_code = $req->version_code;
             $mobile_version->version_name = $req->version_name;
             $mobile_version->min_android_version = $req->min_android_version;
-            $mobile_version->url = "apks/mastergyi-".$req->version_name.".apk";
+            $mobile_version->url = $path;
             $mobile_version->save();
 
             return back()->with('msg', 'The latest version was successfully published.');
 
         }else{
-            $response['status']="fail";
-            return $response;
+            throw ValidationException::withMessages([
+                'anroid_apk_file' => 'The APK could not be saved. Check the server storage permissions and available disk space.',
+            ]);
         }
 
        
