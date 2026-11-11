@@ -63,7 +63,7 @@
         @if (session('history_status'))
             <div class="alert alert-success" role="status">{{ session('history_status') }}</div>
         @endif
-        @include('admin.components.daily-history')
+        @include('admin.components.history-edit-modal')
 
         <section class="admin-grid">
             <article class="panel glass">
@@ -92,23 +92,31 @@
                     </div>
 
                     <div class="info-block warning">
-                        <h3>Results</h3>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h3 class="mb-0">Results <small class="muted">{{ $historyDate->format('d M Y') }}</small></h3>
+                            <button type="button" class="icon-btn small" data-toggle="modal" data-target="#history-edit-modal"
+                                data-history-url="{{ route('admin.lotteries.edit-day', array_filter([
+                                    'type' => 2, 'date' => $historyDate->toDateString(), 'source' => 'dashboard', 'year' => request('year'),
+                                ])) }}" aria-label="Edit MM 2D history" title="Edit history">
+                                <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                            </button>
+                        </div>
                         <table class="mini-table" aria-label="Thai 2D results">
                             <tr>
                                 <td>09:30 AM</td>
-                                <td><strong id="2d_result_num_0930">--</strong></td>
+                                <td><strong id="2d_result_num_0930">{{ $dailyHistory[2]['09:30']['number'] ?? '--' }}</strong></td>
                             </tr>
                             <tr>
                                 <td>12:01 PM</td>
-                                <td><strong id="2d_result_num_1">--</strong></td>
+                                <td><strong id="2d_result_num_1">{{ $dailyHistory[2]['12:01']['number'] ?? '--' }}</strong></td>
                             </tr>
                             <tr>
                                 <td>02:00 PM</td>
-                                <td><strong id="2d_result_num_1400">--</strong></td>
+                                <td><strong id="2d_result_num_1400">{{ $dailyHistory[2]['14:00']['number'] ?? '--' }}</strong></td>
                             </tr>
                             <tr>
                                 <td>04:30 PM</td>
-                                <td><strong id="2d_result_num_2">--</strong></td>
+                                <td><strong id="2d_result_num_2">{{ $dailyHistory[2]['16:30']['number'] ?? '--' }}</strong></td>
                             </tr>
                         </table>
                     </div>
@@ -200,14 +208,21 @@
                     <div class="info-block warning">
                         <h3>Results</h3>
                         <table class="mini-table">
-                            <tr>
-                                <td>{{ date('M') }} 1, 04:30 PM</td>
-                                <td><strong id="3d_result_num_1">Coming soon</strong></td>
-                            </tr>
-                            <tr>
-                                <td>{{ date('M') }} 16, 04:30 PM</td>
-                                <td><strong id="3d_result_num_2">Coming soon</strong></td>
-                            </tr>
+                            @foreach ($monthly3DHistory as $dayNumber => $result)
+                                @php($drawDate = $historyDate->startOfMonth()->day($dayNumber))
+                                <tr>
+                                    <td>{{ $drawDate->format('M j') }}, 03:30 PM</td>
+                                    <td><strong id="3d_result_num_{{ $dayNumber === 1 ? 1 : 2 }}">{{ $result['number'] ?? '--' }}</strong></td>
+                                    <td>
+                                        <button type="button" class="icon-btn small" data-toggle="modal" data-target="#history-edit-modal"
+                                            data-history-url="{{ route('admin.lotteries.edit-day', ['type' => 3, 'date' => $drawDate->toDateString(), 'source' => 'dashboard']) }}"
+                                            aria-label="Edit MM 3D history for {{ $drawDate->format('d M Y') }}" title="Edit history"
+                                            @disabled(! $result['due'])>
+                                            <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </table>
                     </div>
 
@@ -331,21 +346,21 @@
         $(document).ready(() => {
             fetchThai2DNumber();
             fetchThai2DSavedResults();
+            fetchThai3DSavedResults();
             fetchThai3DNumber();
             setInterval(() => {
                 fetchThai2DNumber();
                 fetchThai2DSavedResults();
+                fetchThai3DSavedResults();
                 fetchThai3DNumber();
                 notify();
             }, 5000);
         });
 
         function fetchThai2DSavedResults() {
-            const parts = Object.fromEntries(new Intl.DateTimeFormat('en', {
-                timeZone: 'Asia/Yangon', year: 'numeric', month: '2-digit', day: '2-digit'
-            }).formatToParts(new Date()).map(part => [part.type, part.value]));
-            const date = `${parts.year}-${parts.month}-${parts.day}`;
-            const targets = { '09:30': '#2d_result_num_0930', '14:00': '#2d_result_num_1400' };
+            const date = @json($historyDate->toDateString());
+            const parts = { year: date.slice(0, 4), month: date.slice(5, 7) };
+            const targets = { '09:30': '#2d_result_num_0930', '12:01': '#2d_result_num_1', '14:00': '#2d_result_num_1400', '16:30': '#2d_result_num_2' };
 
             if (thai2DHistoryDate !== date) {
                 thai2DHistoryDate = date;
@@ -376,6 +391,29 @@
                 complete: function() {
                     thai2DHistoryLoading = false;
                 }
+            });
+        }
+
+        let thai3DHistoryLoading = false;
+        function fetchThai3DSavedResults() {
+            if (thai3DHistoryLoading) return;
+            thai3DHistoryLoading = true;
+            $.ajax({
+                url: @json(url('/api/lotteries/records')),
+                dataType: 'json', timeout: 10000,
+                data: { type: 3, year: {{ $historyDate->year }}, month: {{ $historyDate->month }} },
+                success: function(records) {
+                    if (!Array.isArray(records)) return;
+                    $('#3d_result_num_1, #3d_result_num_2').text('--');
+                    records.forEach(record => {
+                        const day = Number(record.date?.slice(-2));
+                        if ([1, 16].includes(day) && record.draw_time === '15:30'
+                            && typeof record.number === 'string' && /^[0-9]{3}$/.test(record.number)) {
+                            $(day === 1 ? '#3d_result_num_1' : '#3d_result_num_2').text(record.number);
+                        }
+                    });
+                },
+                complete: function() { thai3DHistoryLoading = false; }
             });
         }
 
@@ -410,17 +448,6 @@
                         $('#2d_status').css({'color': '#ce4444'});
                     }
 
-                    if (res.result) {
-                        let result = res.result;
-                        result.map((history) => {
-                            if (history.open_time == "12:01:00") {
-                                $('#2d_result_num_1').html(history.twod);
-                            }
-                            if (history.open_time == "16:30:00") {
-                                $('#2d_result_num_2').html(history.twod);
-                            }
-                        });
-                    }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', status, error);
@@ -434,16 +461,6 @@
                 type: 'GET',
                 success: function(res) {
                     $('#3d_live_num').html(res.number);
-                    if (res.history) {
-                        let history = res.history;
-
-                        if (history.first) {
-                            $('#3d_result_num_1').html(history.first.number);
-                        }
-                        if (history.second) {
-                            $('#3d_result_num_2').html(history.second.number);
-                        }
-                    }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', status, error);

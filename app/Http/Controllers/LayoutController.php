@@ -123,6 +123,10 @@ class LayoutController extends Controller
             'page_name'=>'Dashboard',
             'historyDate' => $historyDate,
             'dailyHistory' => [2 => $history->day(2, $historyDate), 3 => $history->day(3, $historyDate)],
+            'monthly3DHistory' => [
+                1 => $history->day(3, $historyDate->startOfMonth())['15:30'],
+                16 => $history->day(3, $historyDate->startOfMonth()->day(16))['15:30'],
+            ],
             'total_user'=> $total_user,
             'total_balance'=>$total_balance,
             'total_transaction'=>$total_transaction,

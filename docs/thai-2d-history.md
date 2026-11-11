@@ -17,13 +17,15 @@ concurrent captures.
 
 ## Admin history corrections
 
-Admins can use the pencil beside a calendar date or the pencil in each
-**Dashboard → Saved results** section to correct MM 2D or MM 3D history in a
+Admins can use the pencil beside a calendar date or the pencil in the existing
+dashboard **Results** sections to correct MM 2D or MM 3D history in a
 modal. The modal loads the selected day's records, shows field validation
 errors without closing, and supports Cancel and Escape. Saving refreshes the
 same page to update the results and totals while keeping the selected date/month.
-The dashboard date selector
-loads a particular day's saved results separately from its live API panel.
+The dashboard's existing 2D Results table displays saved records for the day;
+its 3D table displays the month's 1st and 16th results, with a pencil for each
+completed draw. The live number remains separate. Result refreshes use saved
+history so manual corrections remain visible. Other dates can be edited in the calendar.
 Save returns to the selected calendar month or dashboard date and report year.
 
 The editor updates the latest saved row for each date/clock or creates a missing

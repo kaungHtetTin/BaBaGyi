@@ -245,7 +245,9 @@ class AdminResultCalendarTest extends TestCase
         }
         $this->result(11, '07', '2026-11-06 09:30:00');
         $response = $this->get(route('admin.index', ['date' => '2026-11-06']))->assertOk()
-            ->assertSee('Saved results')->assertSee('Edit history')
+            ->assertDontSee('Saved results')->assertSee('Edit MM 2D history')
+            ->assertSee('Edit MM 3D history')->assertSee('data-target="#history-edit-modal"', false)
+            ->assertSee('id="2d_result_num_0930">07</strong>', false)
             ->assertSee(route('admin.lotteries.edit-day', ['type' => 2, 'date' => '2026-11-06', 'source' => 'dashboard']));
         $this->assertSame('07', $response->viewData('dailyHistory')[2]['09:30']['number']);
         $this->assertNull($response->viewData('dailyHistory')[2]['14:00']['number']);
