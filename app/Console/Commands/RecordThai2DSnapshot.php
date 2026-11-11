@@ -99,6 +99,17 @@ class RecordThai2DSnapshot extends Command
                 return true;
             });
 
+            if ($saved) {
+                Log::channel('single')->info('Lottery winning digit recorded.', [
+                    'lottery_type_id' => 2,
+                    'clock_id' => $clock->id,
+                    'draw_time' => $time,
+                    'win_digit' => $live['twod'],
+                    'recorded_at' => $now->toDateTimeString(),
+                    'timezone' => 'Asia/Yangon',
+                ]);
+            }
+
             $this->info($saved ? "Thai 2D {$time} snapshot saved." : 'This Thai 2D snapshot has already been recorded.');
 
             return Command::SUCCESS;

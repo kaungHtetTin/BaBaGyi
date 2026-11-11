@@ -16,12 +16,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(function () {
-            Log::channel('single')->info('Scheduler heartbeat: schedule:run is running.', [
-                'time' => now('Asia/Yangon')->toDateTimeString(),
-                'timezone' => 'Asia/Yangon',
-            ]);
-        })->everyMinute()->name('scheduler-heartbeat');
+        // $schedule->call(function () {
+        //     Log::channel('single')->info('Scheduler heartbeat: schedule:run is running.', [
+        //         'time' => now('Asia/Yangon')->toDateTimeString(),
+        //         'timezone' => 'Asia/Yangon',
+        //     ]);
+        // })->everyMinute()->name('scheduler-heartbeat');
 
         $schedule->command('inspire')->hourly();
 

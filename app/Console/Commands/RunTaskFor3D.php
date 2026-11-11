@@ -8,6 +8,7 @@ use App\Models\Voucher;
 use App\Models\LotteryType;
 use App\Models\Number;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RunTaskFor3D extends Command
 {
@@ -51,6 +52,15 @@ class RunTaskFor3D extends Command
             $lottery->clock_id = 5;        
             $lottery->number = $win_num;         
             $lottery->save();
+
+            Log::channel('single')->info('Lottery winning digit recorded.', [
+                'lottery_type_id' => $lottery_type_id,
+                'clock_id' => $clock_id,
+                'draw_time' => '15:30',
+                'win_digit' => (string) $win_num,
+                'recorded_at' => now('Asia/Yangon')->toDateTimeString(),
+                'timezone' => 'Asia/Yangon',
+            ]);
 
             Voucher::where(DB::raw("DAY(created_at)"),date('d'))
             ->where(DB::raw("MONTH(created_at)"),date('m'))

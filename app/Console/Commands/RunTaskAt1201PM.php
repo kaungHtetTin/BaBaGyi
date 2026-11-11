@@ -9,6 +9,7 @@ use App\Models\Voucher;
 use App\Models\Number;
 use App\Models\HotNumber;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RunTaskAt1201PM extends Command
 {
@@ -65,6 +66,15 @@ class RunTaskAt1201PM extends Command
         $lottery->clock_id = $clock_id;        
         $lottery->number = $win_num;         
         $lottery->save();
+
+        Log::channel('single')->info('Lottery winning digit recorded.', [
+            'lottery_type_id' => $lottery_type_id,
+            'clock_id' => $clock_id,
+            'draw_time' => '12:01',
+            'win_digit' => (string) $win_num,
+            'recorded_at' => now('Asia/Yangon')->toDateTimeString(),
+            'timezone' => 'Asia/Yangon',
+        ]);
 
         Voucher::where(DB::raw("DAY(created_at)"),date('d'))
         ->where(DB::raw("MONTH(created_at)"),date('m'))
