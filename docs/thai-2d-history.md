@@ -39,15 +39,35 @@ The history editor does not invoke the 12:01 or 16:30 saving and settlement comm
 ## Official release results
 
 The 12:01 automatic release uses the live endpoint's `result` entry with
-`open_time = 12:00:00`; the 16:30 release uses `open_time = 16:30:00`.
+`open_time = 12:01:00`; the 16:30 release uses `open_time = 16:30:00`.
 Both require today's Myanmar `stock_date`, a two-digit string in `twod`, and a
 nonempty `history_id` indicating a completed result. They select by time/date,
 independent of array ordering, and never fall back to `live.twod`.
-Missing, unfinished, stale, malformed, or failed API responses log a warning and
-exit without saving or changing voucher status, number demand, or hot numbers.
-No automatic retry is added; a missing result skips that scheduled release.
-For a valid official result, the existing saving, win-status updates, and reset
-behavior still apply. The 09:30 and 14:00 captures continue to use API server time.
+The scheduler checks every minute from **12:01 through 12:16** and **16:30 through
+16:45**, inclusive, in `Asia/Yangon`. Each tick makes one API request until the
+draw is saved. Missing, unfinished, stale, malformed, or failed API responses
+leave vouchers, number demand, and hot numbers untouched. Pending attempts log
+at info level; a failed final attempt logs a warning requiring admin review.
+There are no automatic attempts after the retry window. Cron must continue to
+run `php artisan schedule:run` every minute; no queue worker is required.
+
+Result saving, voucher win-status updates, and number resets run in one database
+transaction, locking the lottery-type row and checking again for an existing
+result for that Myanmar date/clock. Retries and concurrent releases preserve an
+existing result and do not repeat settlement. This also preserves legacy and
+admin-entered history: a saved history row is **not** automatically settled or
+overwritten. If an admin entered history before release, voucher settlement
+requires separate admin review. Failed database work rolls back so the next
+attempt can retry. Saved result timestamps use the draw time, while logs contain
+the actual recording time. Balances and betting cutoffs retain their existing
+behavior. The 09:30 and 14:00 captures continue to use API server time.
+
+For an unresolved draw, after checking the API and confirming there is no saved
+result for that draw, an operator can retry manually later on the **same Myanmar
+date** with `php artisan command:runat1201pm` or `php artisan command:runat430pm`.
+The scheduler passes `--scheduled` to enforce its retry window; manual commands
+without that flag allow same-day recovery. Manual release mode still prevents
+automatic and command-line release.
 
 The source must return the exact target `server_time`, exactly two digits,
 today's date, and a live timestamp no more than five minutes behind the API

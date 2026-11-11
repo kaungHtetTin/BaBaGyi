@@ -175,9 +175,9 @@ class RecordThai2DSnapshotTest extends TestCase
             $this->assertTrue($event->withoutOverlapping);
         }
         $this->assertTrue($events->contains(fn ($event) => str_contains($event->command, 'command:runat1201pm')
-            && $event->expression === '1 12 * * *'));
+            && $event->expression === '1-16 12 * * *'));
         $this->assertTrue($events->contains(fn ($event) => str_contains($event->command, 'command:runat430pm')
-            && $event->expression === '30 16 * * *'));
+            && $event->expression === '30-45 16 * * *'));
     }
 
     public function test_capture_waits_for_exact_server_second_for_both_slots(): void

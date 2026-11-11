@@ -35,8 +35,11 @@ class Kernel extends ConsoleKernel
                 ->withoutOverlapping(5);
         }
         
-        $schedule->command('command:runat1201pm')->dailyAt('12:01');
-        $schedule->command('command:runat430pm')->dailyAt('16:30');
+        // Poll once per minute through 15 minutes after each official draw.
+        $schedule->command('command:runat1201pm', ['--scheduled'])
+            ->timezone('Asia/Yangon')->cron('1-16 12 * * *')->withoutOverlapping(5);
+        $schedule->command('command:runat430pm', ['--scheduled'])
+            ->timezone('Asia/Yangon')->cron('30-45 16 * * *')->withoutOverlapping(5);
         $schedule->command('command:runtaskfor3d')->dailyAt('15:30');
         $schedule->command('command:runat0001am')->timezone('Asia/Yangon')->dailyAt('00:01');
       
