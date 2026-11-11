@@ -15,8 +15,37 @@ One record is kept per Myanmar date and clock; repeated captures preserve the
 first saved number. A transaction locks the lottery-type row to serialize
 concurrent captures.
 
-The source must return exactly two digits, today's date, and a live timestamp
-no more than five minutes old (or one minute ahead). Leading zeroes are kept.
+## Admin history corrections
+
+Admins can use the pencil beside a calendar date or **Dashboard → Saved results
+→ Edit history** to correct MM 2D or MM 3D history. The dashboard date selector
+loads a particular day's saved results separately from its live API panel.
+Save returns to the selected calendar month or dashboard date and report year.
+
+The editor updates the latest saved row for each date/clock or creates a missing
+history row at the draw time. Enter exactly two or three digits, including any
+leading zeroes. Blank fields keep existing results; future draw times and
+unconfigured clocks cannot be filled. Each correction logs the admin, date,
+draw time, and old/new numbers. Only `lotteries` rows are written: this does not
+release results, recalculate voucher wins, pay vouchers, or reset numbers.
+The history editor does not invoke the 12:01 or 16:30 saving and settlement commands.
+
+## Official release results
+
+The 12:01 automatic release uses the live endpoint's `result` entry with
+`open_time = 12:00:00`; the 16:30 release uses `open_time = 16:30:00`.
+Both require today's Myanmar `stock_date`, a two-digit string in `twod`, and a
+nonempty `history_id` indicating a completed result. They select by time/date,
+independent of array ordering, and never fall back to `live.twod`.
+Missing, unfinished, stale, malformed, or failed API responses log a warning and
+exit without saving or changing voucher status, number demand, or hot numbers.
+No automatic retry is added; a missing result skips that scheduled release.
+For a valid official result, the existing saving, win-status updates, and reset
+behavior still apply. The 09:30 and 14:00 captures continue to use API server time.
+
+The source must return the exact target `server_time`, exactly two digits,
+today's date, and a live timestamp no more than five minutes behind the API
+clock and never ahead of it. Leading zeroes are kept.
 If the market/API has no fresh value at either time, no record is fabricated:
 the command exits unsuccessfully and logs the reason in the Laravel log.
 There is no later backfill with a different minute's live value.
@@ -124,5 +153,23 @@ Avoid installing a second scheduler if one already runs this project.
 
 Inspect the registered schedule with `php artisan schedule:list`. The individual
 commands are `php artisan lottery:record-thai-2d 09:30` and `php artisan
-lottery:record-thai-2d 14:00`; each accepts captures only during its matching
-Myanmar minute to prevent accidental records under the wrong clock.
+lottery:record-thai-2d 14:00`. The scheduler starts these commands at **09:29**
+and **13:59**, one minute early, to absorb scheduler startup delay. Manual runs
+must start in the minute before or during the matching Myanmar minute.
+
+The command polls the live API using its top-level `server_time` as the draw
+clock. It saves `live.twod` only from a response whose `server_time` equals
+**09:30:00** or **14:00:00** on today's Myanmar date. `live.time` is the stock
+update timestamp and may lag `server_time`; it must be on today's date, no more
+than five minutes behind the API clock, and never in the future. The saved
+history timestamp is the target draw time. Success logs include `win_digit`,
+`server_time`, `live_time`, and the local `recorded_at` time.
+
+Polling runs once per second, increasing to five requests per second within two
+seconds of the target. It stops after 90 seconds (plus any in-flight request,
+with a five-second HTTP timeout). A missing or invalid API server timestamp,
+HTTP failure, or skipped target second produces a warning and no history row.
+There is no fallback to a later digit. Network latency and API update frequency
+can still cause a missed second; the API's server clock does not guarantee
+that a request will observe every second. Keep the host clock synchronized so
+capture starts in the correct window. Existing settlement commands are unchanged.

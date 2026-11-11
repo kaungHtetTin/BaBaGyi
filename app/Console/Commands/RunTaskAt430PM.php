@@ -10,6 +10,8 @@ use App\Models\Voucher;
 use App\Models\Number;
 use App\Models\HotNumber;
 use Illuminate\Support\Facades\DB;
+use App\Services\Thai2DOfficialResult;
+use Throwable;
 
 class RunTaskAt430PM extends Command
 {
@@ -42,25 +44,17 @@ class RunTaskAt430PM extends Command
         $lottery_type = LotteryType::find($lottery_type_id);
         if($lottery_type->release_mode == 0) return;
 
-        $url = "https://api.thaistock2d.com/live";
+        try {
+            $result = app(Thai2DOfficialResult::class)->fetch('16:30:00');
+        } catch (Throwable $exception) {
+            Log::warning('Thai 2D release was skipped.', [
+                'clock_id' => $clock_id, 'open_time' => '16:30:00', 'reason' => $exception->getMessage(),
+            ]);
+            $this->error($exception->getMessage());
 
-        $headers = [
-            "Content-Type: application/json",
-        ];
-
-        $options = [
-            "http" => [
-                "method"  => "GET",
-                "header"  => implode("\r\n", $headers)
-            ]
-        ];
-        $context = stream_context_create($options);
-
-        $response = file_get_contents($url, false, $context);
-
-        $result = json_decode($response,true);
-        
-        $win_num = $result['live']['twod'];
+            return Command::FAILURE;
+        }
+        $win_num = $result['twod'];
 
     
         $lottery = new Lottery();
@@ -74,6 +68,10 @@ class RunTaskAt430PM extends Command
             'clock_id' => $clock_id,
             'draw_time' => '16:30',
             'win_digit' => (string) $win_num,
+            'source' => 'result',
+            'open_time' => $result['open_time'],
+            'stock_date' => $result['stock_date'],
+            'history_id' => $result['history_id'],
             'recorded_at' => now('Asia/Yangon')->toDateTimeString(),
             'timezone' => 'Asia/Yangon',
         ]);

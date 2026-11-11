@@ -139,4 +139,115 @@ class AdminResultCalendarTest extends TestCase
         $this->getJson('/admin/lotteries/records?month=13&year=bad&type=4')->assertUnprocessable()
             ->assertJsonValidationErrors(['month', 'year', 'type']);
     }
+
+    public function test_admin_can_correct_history_and_fill_missing_draws_without_changing_operational_tables(): void
+    {
+        $this->result(11, '99', '2026-11-06 09:30:00');
+        $this->result(12, '88', '2026-11-06 12:01:00');
+        $this->result(14, '77', '2026-11-06 16:30:00');
+        DB::table('vouchers')->insert(['user_id' => auth()->id(), 'lottery_type_id' => 2,
+            'clock_id' => 12, 'number' => '07', 'amount' => 100, 'win' => 0, 'verified' => 1,
+            'created_at' => '2026-11-06 11:00:00']);
+        DB::table('numbers')->insert(['lottery_type_id' => 2, 'clock_id' => 12,
+            'number' => '07', 'sell' => 1000, 'demand' => 100, 'report' => 20, 'disable' => 1]);
+        DB::table('hot_numbers')->insert(['lottery_type_id' => 2, 'clock_id' => 12, 'number' => '07']);
+        $tables = ['users', 'vouchers', 'numbers', 'hot_numbers', 'wallet_histories', 'lottery_types', 'lottery_clock'];
+        $before = [];
+        foreach ($tables as $table) {
+            $before[$table] = DB::table($table)->get()->toJson();
+        }
+
+        $this->put(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'source' => 'calendar', 'numbers' => ['09:30' => '07', '12:01' => '00', '14:00' => '42', '16:30' => '12']])
+            ->assertRedirect(route('admin.lotteries.records', ['type' => 2, 'year' => 2026, 'month' => 11]))
+            ->assertSessionHas('history_status');
+        foreach ([11 => '07', 12 => '00', 13 => '42', 14 => '12'] as $clock => $number) {
+            $this->assertDatabaseHas('lotteries', ['clock_id' => $clock, 'number' => $number]);
+        }
+        $this->assertDatabaseCount('lotteries', 4);
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 13, 'created_at' => '2026-11-06 14:00:00']);
+        $this->getJson('/api/lotteries/records?type=2&year=2026&month=11')
+            ->assertOk()->assertJsonCount(4)->assertJsonFragment(['number' => '07'])
+            ->assertJsonFragment(['number' => '00']);
+        foreach ($tables as $table) {
+            $this->assertSame($before[$table], DB::table($table)->get()->toJson(), $table.' must remain unchanged');
+        }
+    }
+
+    public function test_history_editor_renders_saved_values_and_preserves_dashboard_context(): void
+    {
+        $this->result(11, '07', '2026-11-06 09:30:00');
+        $this->get(route('admin.lotteries.edit-day', ['type' => 2, 'date' => '2026-11-06',
+            'source' => 'dashboard', 'year' => 2025]))->assertOk()
+            ->assertSee('History correction only')->assertSee('value="07"', false)
+            ->assertSee(route('admin.index', ['date' => '2026-11-06', 'year' => 2025]));
+        $this->put(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'source' => 'dashboard', 'year' => 2025, 'numbers' => ['09:30' => '08']])
+            ->assertRedirect(route('admin.index', ['date' => '2026-11-06', 'year' => 2025]));
+    }
+
+    public function test_history_edits_target_latest_duplicate_and_blank_does_not_delete(): void
+    {
+        $this->result(11, '07', '2026-11-06 09:30:00');
+        $this->result(11, '08', '2026-11-06 09:31:00');
+        $this->result(12, '99', '2026-11-06 12:01:00');
+        $this->put(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'numbers' => ['09:30' => '00', '12:01' => '']])->assertRedirect();
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 11, 'number' => '07', 'created_at' => '2026-11-06 09:30:00']);
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 11, 'number' => '00', 'created_at' => '2026-11-06 09:31:00']);
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 12, 'number' => '99']);
+        $this->assertDatabaseCount('lotteries', 3);
+    }
+
+    public function test_three_digit_history_can_be_filled_on_a_weekend_draw_date(): void
+    {
+        $this->put(route('admin.lotteries.update-day'), ['type' => 3, 'date' => '2026-11-01',
+            'numbers' => ['15:30' => '007']])->assertRedirect();
+        $this->assertDatabaseHas('lotteries', ['lottery_type_id' => 3, 'clock_id' => 15,
+            'number' => '007', 'created_at' => '2026-11-01 15:30:00']);
+    }
+
+    public function test_invalid_numbers_dates_and_draws_cannot_write_history(): void
+    {
+        foreach ([
+            ['numbers' => ['09:30' => '7']], ['numbers' => ['09:30' => '007']],
+            ['numbers' => ['09:30' => 'ab']], ['numbers' => ['10:00' => '07']],
+            ['date' => '2026-11-09'], ['date' => '2026-02-30'], ['type' => 1],
+            ['date' => '2026-11-08', 'numbers' => ['16:30' => '07']],
+        ] as $overrides) {
+            $this->putJson(route('admin.lotteries.update-day'), array_replace([
+                'type' => 2, 'date' => '2026-11-06', 'numbers' => ['09:30' => '07'],
+            ], $overrides))->assertUnprocessable();
+        }
+        DB::table('clocks')->where('id', 11)->delete();
+        $this->putJson(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'numbers' => ['09:30' => '07']])->assertUnprocessable();
+        $this->assertDatabaseCount('lotteries', 0);
+    }
+
+    public function test_non_admin_and_guest_cannot_edit_history(): void
+    {
+        auth()->user()->forceFill(['admin' => 0])->save();
+        $this->put(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'numbers' => ['09:30' => '07']])->assertSee('Access Denied');
+        auth()->logout();
+        $this->put(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'numbers' => ['09:30' => '07']])->assertRedirect(route('login'));
+        $this->assertDatabaseCount('lotteries', 0);
+    }
+
+    public function test_dashboard_shows_saved_results_for_selected_day_and_edit_links(): void
+    {
+        // The dashboard's existing report queries use MySQL date functions.
+        $pdo = DB::connection()->getPdo();
+        foreach (['YEAR' => 'Y', 'MONTH' => 'm', 'DAY' => 'd'] as $function => $format) {
+            $pdo->sqliteCreateFunction($function, fn ($value) => $value ? (int) date($format, strtotime($value)) : null);
+        }
+        $this->result(11, '07', '2026-11-06 09:30:00');
+        $response = $this->get(route('admin.index', ['date' => '2026-11-06']))->assertOk()
+            ->assertSee('Saved results')->assertSee('Edit history')
+            ->assertSee(route('admin.lotteries.edit-day', ['type' => 2, 'date' => '2026-11-06', 'source' => 'dashboard']));
+        $this->assertSame('07', $response->viewData('dailyHistory')[2]['09:30']['number']);
+        $this->assertNull($response->viewData('dailyHistory')[2]['14:00']['number']);
+    }
 }

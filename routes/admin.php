@@ -101,6 +101,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/vouchers/{id}/delete',[VoucherController::class,'delete'])->name('admin.vouchers.delete');
 
         Route::get('/lotteries/records',[LotteryController::class,'records'])->name('admin.lotteries.records');
+        Route::get('/lotteries/records/edit-day',[LotteryController::class,'editDay'])->name('admin.lotteries.edit-day');
+        Route::put('/lotteries/records/day',[LotteryController::class,'updateDay'])->name('admin.lotteries.update-day');
 
         Route::get('/profile',[ProfileController::class,'index'])->name('admin.profile');
         Route::post('/change-avatar',[ProfileController::class,'changeAvatar'])->name('admin.avatar.modify');

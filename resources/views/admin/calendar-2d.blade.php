@@ -14,6 +14,9 @@
 
 @section('content')
     <div class="container-fluid result-calendar">
+        @if (session('history_status'))
+            <div class="alert alert-success" role="status">{{ session('history_status') }}</div>
+        @endif
         <div class="admin-page-heading">
             <div>
                 <p class="eyebrow">LOTTERY CALENDAR</p>
@@ -88,6 +91,13 @@
                                     <div class="calendar-day-heading">
                                         <time datetime="{{ $day['date']->toDateString() }}" @if($day['is_today']) aria-current="date" @endif>{{ $day['date']->day }}</time>
                                         @if ($day['is_today']) <span>Today</span> @endif
+                                        @if ($day['in_month'] && $day['date']->lte($today))
+                                            <a class="calendar-edit-day" href="{{ route('admin.lotteries.edit-day', [
+                                                'type' => $type, 'date' => $day['date']->toDateString(), 'source' => 'calendar',
+                                            ]) }}" aria-label="Edit history for {{ $day['date']->format('d M Y') }}" title="Edit history">
+                                                <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                            </a>
+                                        @endif
                                     </div>
                                     @if ($day['in_month'])
                                         @if (count($day['results']))

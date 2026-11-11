@@ -9,9 +9,15 @@ use App\Models\Transaction;
 use App\Models\Withdraw;
 use App\Models\Voucher;
 use App\Models\LotteryType;
+use App\Services\LotteryHistory;
+use Carbon\CarbonImmutable;
 class LayoutController extends Controller
 {
     public function index(Request $req){
+
+        $req->validate(['date' => 'sometimes|date_format:Y-m-d|before_or_equal:'.CarbonImmutable::now('Asia/Yangon')->toDateString()]);
+        $historyDate = CarbonImmutable::parse($req->input('date', CarbonImmutable::now('Asia/Yangon')->toDateString()), 'Asia/Yangon');
+        $history = app(LotteryHistory::class);
 
         if(isset($req->year)) $year = $req->year;
         else $year = date('Y');
@@ -115,6 +121,8 @@ class LayoutController extends Controller
      
         return view('admin.index',[
             'page_name'=>'Dashboard',
+            'historyDate' => $historyDate,
+            'dailyHistory' => [2 => $history->day(2, $historyDate), 3 => $history->day(3, $historyDate)],
             'total_user'=> $total_user,
             'total_balance'=>$total_balance,
             'total_transaction'=>$total_transaction,

@@ -26,11 +26,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('inspire')->hourly();
 
         // History only: these commands do not settle vouchers or reset numbers.
-        foreach (['09:30', '14:00'] as $time) {
+        // Arm capture one minute early; the API server clock selects the exact second.
+        foreach (['09:30' => '09:29', '14:00' => '13:59'] as $time => $startTime) {
             $schedule->command('lottery:record-thai-2d', [$time])
                 ->timezone('Asia/Yangon')
                 ->weekdays()
-                ->dailyAt($time)
+                ->dailyAt($startTime)
                 ->withoutOverlapping(5);
         }
         

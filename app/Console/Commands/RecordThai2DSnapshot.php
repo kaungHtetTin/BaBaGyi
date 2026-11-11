@@ -33,8 +33,9 @@ class RecordThai2DSnapshot extends Command
         }
 
         $now = CarbonImmutable::now('Asia/Yangon');
-        if ($now->format('H:i') !== $time) {
-            return $this->failedSnapshot($time, 'The command must run during its scheduled Myanmar minute.');
+        $target = $now->setTimeFromTimeString($time.':00');
+        if ($now->lt($target->subMinute()) || $now->gte($target->addMinute())) {
+            return $this->failedSnapshot($time, 'The command must start during the minute before or the scheduled Myanmar minute.');
         }
 
         if ($now->isWeekend()) {
@@ -60,9 +61,40 @@ class RecordThai2DSnapshot extends Command
                 return Command::SUCCESS;
             }
 
-            $live = Http::acceptJson()->connectTimeout(5)->timeout(15)
-                ->get('https://api.thaistock2d.com/live')
-                ->throw()->json('live');
+            // Start before the draw so scheduler startup latency does not choose the digit.
+            // Bound polling with a monotonic clock even if the API clock stops advancing.
+            $deadline = hrtime(true) + 90_000_000_000;
+            do {
+                $payload = Http::acceptJson()->withHeaders(['Cache-Control' => 'no-cache'])
+                    ->connectTimeout(3)->timeout(5)
+                    ->get('https://api.thaistock2d.com/live')
+                    ->throw()->json();
+                $serverValue = is_array($payload) ? ($payload['server_time'] ?? null) : null;
+                if (! is_string($serverValue)) {
+                    return $this->failedSnapshot($time, 'The API server_time is missing or invalid.');
+                }
+                $serverTime = CarbonImmutable::createFromFormat('!Y-m-d H:i:s', $serverValue, 'Asia/Yangon');
+                if ($serverTime->format('Y-m-d H:i:s') !== $serverValue
+                    || $serverTime->toDateString() !== $target->toDateString()) {
+                    return $this->failedSnapshot($time, 'The API server_time has an invalid format or date.');
+                }
+                if ($serverTime->gt($target)) {
+                    return $this->failedSnapshot($time, 'Exact API server second was missed; no later digit was saved.', [
+                        'target_time' => $target->toDateTimeString(),
+                        'server_time' => $serverValue,
+                    ]);
+                }
+                if ($serverTime->equalTo($target)) {
+                    break;
+                }
+                if (hrtime(true) >= $deadline) {
+                    return $this->failedSnapshot($time, 'Timed out waiting for the exact API server second.');
+                }
+                // Poll five times per second near the target; once per second earlier.
+                usleep($target->getTimestamp() - $serverTime->getTimestamp() <= 2 ? 200_000 : 1_000_000);
+            } while (true);
+
+            $live = $payload['live'] ?? null;
 
             if (! is_array($live)
                 || ! is_string($live['twod'] ?? null)
@@ -73,14 +105,14 @@ class RecordThai2DSnapshot extends Command
             }
 
             $sourceTime = CarbonImmutable::createFromFormat('!Y-m-d H:i:s', $live['time'], 'Asia/Yangon');
-            $age = $now->getTimestamp() - $sourceTime->getTimestamp();
+            $age = $serverTime->getTimestamp() - $sourceTime->getTimestamp();
             if ($sourceTime->format('Y-m-d H:i:s') !== $live['time']
                 || $sourceTime->toDateString() !== $now->toDateString()
-                || $age < -60 || $age > 300) {
+                || $age < 0 || $age > 300) {
                 return $this->failedSnapshot($time, 'The API live timestamp is stale or invalid.');
             }
 
-            $saved = DB::transaction(function () use ($records, $clock, $live, $now) {
+            $saved = DB::transaction(function () use ($records, $clock, $live, $target) {
                 // Serialize concurrent captures for this lottery type before checking again.
                 // History recording is independent of open/release_mode settings.
                 LotteryType::whereKey(2)->lockForUpdate()->firstOrFail();
@@ -92,8 +124,8 @@ class RecordThai2DSnapshot extends Command
                 $lottery->lottery_type_id = 2;
                 $lottery->clock_id = $clock->id;
                 $lottery->number = $live['twod'];
-                $lottery->created_at = $now;
-                $lottery->updated_at = $now;
+                $lottery->created_at = $target;
+                $lottery->updated_at = $target;
                 $lottery->save();
 
                 return true;
@@ -105,7 +137,9 @@ class RecordThai2DSnapshot extends Command
                     'clock_id' => $clock->id,
                     'draw_time' => $time,
                     'win_digit' => $live['twod'],
-                    'recorded_at' => $now->toDateTimeString(),
+                    'server_time' => $serverValue,
+                    'live_time' => $live['time'],
+                    'recorded_at' => CarbonImmutable::now('Asia/Yangon')->toDateTimeString(),
                     'timezone' => 'Asia/Yangon',
                 ]);
             }
@@ -118,9 +152,9 @@ class RecordThai2DSnapshot extends Command
         }
     }
 
-    private function failedSnapshot(string $time, string $reason): int
+    private function failedSnapshot(string $time, string $reason, array $context = []): int
     {
-        Log::warning('Thai 2D history snapshot was not saved.', ['time' => $time, 'reason' => $reason]);
+        Log::warning('Thai 2D history snapshot was not saved.', array_merge(['time' => $time, 'reason' => $reason], $context));
         $this->warn('Thai 2D snapshot was not saved: '.$reason);
 
         return Command::FAILURE;

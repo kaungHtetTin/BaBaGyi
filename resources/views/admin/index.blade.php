@@ -60,6 +60,11 @@
             </article>
         </section>
 
+        @if (session('history_status'))
+            <div class="alert alert-success" role="status">{{ session('history_status') }}</div>
+        @endif
+        @include('admin.components.daily-history')
+
         <section class="admin-grid">
             <article class="panel glass">
                 <div class="panel-heading">
