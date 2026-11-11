@@ -19,10 +19,13 @@
             <div class="info-block">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <h3 class="mb-0">MM {{ $historyType }}D</h3>
-                    <a class="btn secondary" href="{{ route('admin.lotteries.edit-day', array_filter([
+                    <button type="button" class="icon-btn small" data-toggle="modal" data-target="#history-edit-modal"
+                        data-history-url="{{ route('admin.lotteries.edit-day', array_filter([
                         'type' => $historyType, 'date' => $historyDate->toDateString(),
                         'source' => 'dashboard', 'year' => request('year'),
-                    ])) }}">Edit history</a>
+                    ])) }}" aria-label="Edit MM {{ $historyType }}D history" title="Edit history">
+                        <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <table class="mini-table" aria-label="Saved MM {{ $historyType }}D results">
                     @foreach ($draws as $draw)
@@ -33,3 +36,4 @@
         @endforeach
     </div>
 </section>
+@include('admin.components.history-edit-modal')

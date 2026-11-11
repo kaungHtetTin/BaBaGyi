@@ -92,11 +92,12 @@
                                         <time datetime="{{ $day['date']->toDateString() }}" @if($day['is_today']) aria-current="date" @endif>{{ $day['date']->day }}</time>
                                         @if ($day['is_today']) <span>Today</span> @endif
                                         @if ($day['in_month'] && $day['date']->lte($today))
-                                            <a class="calendar-edit-day" href="{{ route('admin.lotteries.edit-day', [
+                                            <button type="button" class="calendar-edit-day" data-toggle="modal" data-target="#history-edit-modal"
+                                                data-history-url="{{ route('admin.lotteries.edit-day', [
                                                 'type' => $type, 'date' => $day['date']->toDateString(), 'source' => 'calendar',
                                             ]) }}" aria-label="Edit history for {{ $day['date']->format('d M Y') }}" title="Edit history">
                                                 <i class="fas fa-pencil-alt" aria-hidden="true"></i>
-                                            </a>
+                                            </button>
                                         @endif
                                     </div>
                                     @if ($day['in_month'])
@@ -120,5 +121,6 @@
                 </div>
             </div>
         </section>
+        @include('admin.components.history-edit-modal')
     </div>
 @endsection

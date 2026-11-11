@@ -17,10 +17,15 @@ class LotteryController extends Controller
     {
         $data = $this->dayFilters($req);
         $date = CarbonImmutable::parse($data['date'], 'Asia/Yangon');
+        $draws = $history->day((int) $data['type'], $date);
+        if ($req->expectsJson()) {
+            return response()->json(['type' => (int) $data['type'], 'date' => $data['date'],
+                'date_label' => $date->format('D, d M Y'), 'draws' => $draws]);
+        }
 
         return view('admin.history-edit', [
             'page_name' => 'Edit history', 'date' => $date, 'type' => (int) $data['type'],
-            'draws' => $history->day((int) $data['type'], $date),
+            'draws' => $draws,
             'source' => $data['source'] ?? 'calendar', 'returnYear' => $data['year'] ?? null,
             'returnUrl' => $this->historyReturnUrl($data),
         ]);
@@ -78,8 +83,14 @@ class LotteryController extends Controller
                 'lottery_type_id' => $type, 'date' => $data['date'], 'changes' => $changes]);
         }
 
-        return redirect($this->historyReturnUrl($data))->with('history_status',
-            $changes ? 'Result history saved. Voucher win status and payouts were not changed.' : 'No history changes were made.');
+        $message = $changes ? 'Result history saved. Voucher win status and payouts were not changed.' : 'No history changes were made.';
+        if ($req->expectsJson()) {
+            $req->session()->flash('history_status', $message);
+
+            return response()->json(['message' => $message]);
+        }
+
+        return redirect($this->historyReturnUrl($data))->with('history_status', $message);
     }
 
     private function dayFilters(Request $req): array

@@ -1,0 +1,14 @@
+.history-edit-modal .modal-dialog { max-width: 590px; }
+.history-edit-modal .modal-content { color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; }
+.history-edit-modal .modal-header, .history-edit-modal .modal-footer { border-color: var(--color-border); padding: 12px 16px; }
+.history-edit-modal .modal-body { padding: 16px; max-height: 65vh; overflow-y: auto; }
+.history-edit-modal .modal-title { font-size: 18px; }
+.history-edit-modal .close { color: var(--color-text); }
+.history-edit-modal input { font-variant-numeric: tabular-nums; }
+.history-edit-modal input:disabled { opacity: .6; }
+.history-edit-modal .field-error { margin: 0; }
+.history-edit-modal button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+@media (max-width: 760px) {
+    .history-edit-modal .modal-dialog { margin: 12px; }
+    .history-edit-modal .btn, .history-edit-modal .close { min-height: 40px; }
+}

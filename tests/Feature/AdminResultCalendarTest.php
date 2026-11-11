@@ -250,4 +250,29 @@ class AdminResultCalendarTest extends TestCase
         $this->assertSame('07', $response->viewData('dailyHistory')[2]['09:30']['number']);
         $this->assertNull($response->viewData('dailyHistory')[2]['14:00']['number']);
     }
+
+    public function test_modal_loads_the_selected_days_values_and_disables_future_draws(): void
+    {
+        $this->result(11, '07', '2026-11-08 09:30:00');
+        $this->getJson(route('admin.lotteries.edit-day', ['type' => 2, 'date' => '2026-11-08']))
+            ->assertOk()->assertJsonPath('type', 2)->assertJsonPath('date', '2026-11-08')
+            ->assertJsonPath('draws.09:30.number', '07')->assertJsonPath('draws.09:30.due', true)
+            ->assertJsonPath('draws.16:30.due', false);
+        $this->get('/admin/lotteries/records?year=2026&month=11')->assertOk()
+            ->assertSee('data-target="#history-edit-modal"', false)
+            ->assertSee('id="history-edit-modal"', false)->assertSee('admin-history-modal.js');
+    }
+
+    public function test_modal_save_returns_json_and_validation_retains_existing_record(): void
+    {
+        $this->result(11, '07', '2026-11-06 09:30:00');
+        $this->putJson(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'numbers' => ['09:30' => 'bad']])->assertUnprocessable()->assertJsonValidationErrors('numbers.09:30');
+        $this->assertDatabaseHas('lotteries', ['number' => '07']);
+        $this->putJson(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'numbers' => ['09:30' => '00']])->assertOk()->assertJsonStructure(['message'])
+            ->assertSessionHas('history_status');
+        $this->assertDatabaseHas('lotteries', ['number' => '00']);
+        $this->assertDatabaseCount('lotteries', 1);
+    }
 }
