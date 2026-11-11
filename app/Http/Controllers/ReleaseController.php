@@ -38,6 +38,13 @@ class ReleaseController extends Controller
         $clock_id = $req->clock_id;
         $win_num =  $req->lottery_number;
 
+        if ((int) $lottery_type_id === 2
+            && in_array((int) $clock_id, \App\Services\LotteryHistory::hiddenClockIds(), true)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'clock_id' => 'This Thai 2D draw is disabled.',
+            ]);
+        }
+
 
         $lottery = new Lottery();
         $lottery->lottery_type_id = $lottery_type_id ;

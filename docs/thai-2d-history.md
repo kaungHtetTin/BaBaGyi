@@ -158,6 +158,33 @@ These generated values are demo data, not historical market results.
 
 ## Scheduler setup
 
+### Enable or hide the extra draws
+
+The 09:30 and 14:00 history-only draws are controlled together in Laravel's `.env`:
+
+```dotenv
+THAI_2D_EXTRA_DRAWS_ENABLED=false
+```
+
+The default is `false`. Disabled draws have no scheduled capture, and manual
+`lottery:record-thai-2d` commands exit without fetching or saving. The admin
+dashboard, calendar, history editor, and draw selectors hide these draws;
+correction and manual-release requests for them are rejected. Public and web-app APIs omit their saved records and
+calendar slots. Existing database records are preserved.
+
+Set the flag to `true` to restore both draws and their existing history. Apply
+an environment change with `php artisan config:clear`, or rebuild the production
+configuration cache with `php artisan config:cache`. Restart any long-running
+`schedule:work` process after changing configuration.
+
+Updated web and Android clients use the API draw metadata, so missing results
+do not make disabled draws appear as blank slots. `/api/lotteries/records` keeps
+its existing array response; requesting `include_draws=1` returns
+`{"draws":["12:01","16:30"],"records":[]}` when disabled. The calendar's
+`draws` metadata and each day's `results` keys also reflect the setting. Deploy
+the backend and web files and distribute the updated Android APK; older APKs
+with fixed layouts need an update to hide their labels.
+
 The application needs its database and a continuously enabled Laravel scheduler.
 On a server, configure cron to run the following **every minute**, using the
 deployed project's absolute path:
@@ -184,8 +211,11 @@ and **13:59**, one minute early, to absorb scheduler startup delay. Manual runs
 must start in the minute before or during the matching Myanmar minute.
 
 The command polls the live API using its top-level `server_time` as the draw
-clock. It saves `live.twod` only from a response whose `server_time` equals
-**09:30:00** or **14:00:00** on today's Myanmar date. `live.time` is the stock
+clock. It saves the **first valid** `live.twod` from a response whose `server_time`
+is within **09:30:00–09:30:03** or **14:00:00–14:00:03**, inclusive, on today's
+Myanmar date, then stops polling immediately. Invalid live values are skipped
+while the window remains open. The local recording time does not need to match
+the API server time. `live.time` is the stock
 update timestamp and may lag `server_time`; it must be on today's date, no more
 than five minutes behind the API clock, and never in the future. The saved
 history timestamp is the target draw time. Success logs include `win_digit`,
@@ -194,8 +224,9 @@ history timestamp is the target draw time. Success logs include `win_digit`,
 Polling runs once per second, increasing to five requests per second within two
 seconds of the target. It stops after 90 seconds (plus any in-flight request,
 with a five-second HTTP timeout). A missing or invalid API server timestamp,
-HTTP failure, or skipped target second produces a warning and no history row.
-There is no fallback to a later digit. Network latency and API update frequency
-can still cause a missed second; the API's server clock does not guarantee
+HTTP failure, or capture window without a valid live digit produces a warning
+and no history row. There is no fallback to a digit outside the window.
+Network latency and API update frequency can still cause a missed window;
+the API's server clock does not guarantee
 that a request will observe every second. Keep the host clock synchronized so
 capture starts in the correct window. Existing settlement commands are unchanged.

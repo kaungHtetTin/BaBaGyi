@@ -11,6 +11,7 @@ class Thai2DHistoryApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['lottery.thai_2d_extra_draws_enabled' => true]);
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:',
             'database.connections.sqlite.url' => null, 'cache.default' => 'array']);
         DB::purge('sqlite');
@@ -22,6 +23,34 @@ class Thai2DHistoryApiTest extends TestCase
             ['id' => 13, 'hour' => 2, 'minute' => 0, 'morning' => 0],
             ['id' => 14, 'hour' => 4, 'minute' => 30, 'morning' => 0],
         ]);
+    }
+
+    public function test_disabled_draws_are_hidden_from_both_api_clients_and_calendar_slots(): void
+    {
+        foreach ([11, 12, 13, 14] as $clock) {
+            $this->result($clock, '07', '2026-11-09 16:30:00');
+        }
+        config(['lottery.thai_2d_extra_draws_enabled' => false]);
+        foreach ([11, 12, 13, 14] as $clock) {
+            DB::table('lottery_clock')->insert(['lottery_type_id' => 2, 'clock_id' => $clock]);
+        }
+        $this->assertSame([12, 14], \App\Models\LotteryClock::orderBy('clock_id')->pluck('clock_id')->all());
+        foreach (['/api/', '/app/api/'] as $base) {
+            $this->getJson($base.'lottery-types/2/clocks')->assertOk()->assertJsonCount(2);
+            $this->getJson($base.'lotteries/records?type=2&year=2026&month=11')
+                ->assertOk()->assertJsonCount(2)->assertJsonMissing(['draw_time' => '09:30'])
+                ->assertJsonMissing(['draw_time' => '14:00']);
+            $this->getJson($base.'lotteries/records?type=2&year=2026&month=11&include_draws=1')
+                ->assertOk()->assertJsonPath('draws', ['12:01', '16:30'])->assertJsonCount(2, 'records');
+            $calendar = $this->getJson($base.'lotteries/calendar?year=2026&month=11')
+                ->assertOk()->assertJsonCount(2, 'draws');
+            $this->assertSame(['12:01', '16:30'], array_keys($calendar->json('days.0.results')));
+        }
+        $this->assertDatabaseCount('lotteries', 4);
+        config(['lottery.thai_2d_extra_draws_enabled' => true]);
+        $this->getJson('/api/lotteries/records?year=2026&month=11&include_draws=1')
+            ->assertOk()->assertJsonPath('draws', ['09:30', '12:01', '14:00', '16:30'])
+            ->assertJsonCount(4, 'records');
     }
 
     private function result(int $clock, string $number, string $date, int $type = 2): int

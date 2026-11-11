@@ -12,6 +12,7 @@ class AdminResultCalendarTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['lottery.thai_2d_extra_draws_enabled' => true]);
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:',
             'database.connections.sqlite.url' => null, 'cache.default' => 'array', 'session.driver' => 'array']);
         DB::purge('sqlite');
@@ -33,6 +34,36 @@ class AdminResultCalendarTest extends TestCase
     {
         CarbonImmutable::setTestNow();
         parent::tearDown();
+    }
+
+    public function test_disabled_extra_draws_are_hidden_and_cannot_be_manually_saved(): void
+    {
+        $this->result(11, '07', '2026-11-06 09:30:00');
+        $this->result(13, '89', '2026-11-06 14:00:00');
+        config(['lottery.thai_2d_extra_draws_enabled' => false]);
+        $response = $this->get('/admin/lotteries/records?type=2&year=2026&month=11')->assertOk()
+            ->assertDontSee('09:30 AM')->assertDontSee('02:00 PM');
+        $this->assertSame(0, $response->viewData('recordCount'));
+        $this->getJson(route('admin.lotteries.edit-day', ['type' => 2, 'date' => '2026-11-06']))
+            ->assertOk()->assertJsonMissingPath('draws.09:30')->assertJsonMissingPath('draws.14:00');
+        foreach (['09:30', '14:00'] as $time) {
+            $this->putJson(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+                'numbers' => [$time => '00']])->assertUnprocessable();
+        }
+        foreach ([11, 13] as $clockId) {
+            $this->postJson(route('admins.release-2d'), ['lottery_type_id' => 2,
+                'clock_id' => $clockId, 'lottery_number' => '00'])->assertUnprocessable();
+        }
+        foreach (['YEAR' => 'Y', 'MONTH' => 'm', 'DAY' => 'd'] as $function => $format) {
+            DB::connection()->getPdo()->sqliteCreateFunction($function, fn ($value) => $value ? (int) date($format, strtotime($value)) : null);
+        }
+        $this->get(route('admin.index', ['date' => '2026-11-06']))->assertOk()
+            ->assertDontSee('id="2d_result_num_0930"', false)->assertDontSee('id="2d_result_num_1400"', false);
+        $this->putJson(route('admin.lotteries.update-day'), ['type' => 2, 'date' => '2026-11-06',
+            'numbers' => ['12:01' => '12']])->assertOk();
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 11, 'number' => '07']);
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 13, 'number' => '89']);
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 12, 'number' => '12']);
     }
 
     private function result(int $clock, string $number, string $date, int $type = 2): void

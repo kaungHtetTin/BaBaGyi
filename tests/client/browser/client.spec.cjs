@@ -88,6 +88,24 @@ test("topup and withdraw use the native request fields and one request ID", asyn
     expect(errors).toEqual([]);
 });
 
+test("disabled extra draws disappear from result cards and calendar including empty days", async ({ page }) => {
+    const { errors } = await fixtures(page, { extraDraws: false });
+    await page.goto("/app/#/lottery?type=2");
+    await expect(page.locator("[data-saved]")).toHaveCount(2);
+    await expect(page.locator('[data-saved="12:01"]')).toHaveText("12");
+    await expect(page.locator('[data-saved="09:30"]')).toHaveCount(0);
+    await expect(page.locator('[data-saved="14:00"]')).toHaveCount(0);
+    await page.locator('[data-nav="calendar?type=2"]').click();
+    await expect(page.locator(".calendar-day")).toHaveCount(21);
+    await expect(page.locator(".calendar-day").first().locator(".day-result")).toHaveCount(2);
+    await expect(page.locator(".calendar-note")).toHaveText("12:01 PM · 04:30 PM");
+    await expect(page.locator(".calendar-grid")).not.toContainText("09:30");
+    await expect(page.locator(".calendar-grid")).not.toContainText("14:00");
+    await page.locator("[data-nav-back]").click();
+    await expect(page.locator("[data-saved]")).toHaveCount(2);
+    expect(errors).toEqual([]);
+});
+
 test("2D saved results and weekday calendar use all four saved slots", async ({
     page,
 }) => {

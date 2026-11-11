@@ -14,6 +14,7 @@ class LotteryTypeController extends Controller
         ->selectRaw("clocks.*,lottery_clock.close_before")
         ->join('clocks','clocks.id','=','lottery_clock.clock_id')
         ->where('lottery_type_id',$id)
+        ->when((int) $id === 2, fn ($query) => $query->whereNotIn('clocks.id', \App\Services\LotteryHistory::hiddenClockIds()))
         ->get();
         return $clocks;
     }

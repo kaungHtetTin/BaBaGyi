@@ -5,24 +5,23 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Clock;
 use App\Models\Lottery;
+use App\Services\LotteryHistory;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LotteryController extends Controller
 {
-    private const THAI_2D_DRAWS = [
-        '09:30' => '09:30 AM',
-        '12:01' => '12:01 PM',
-        '14:00' => '02:00 PM',
-        '16:30' => '04:30 PM',
-    ];
-
     public function records(Request $req)
     {
         [$year, $month, $type] = $this->monthParameters($req);
 
-        return response()->json($this->monthlyRecords($year, $month, $type));
+        $records = $this->monthlyRecords($year, $month, $type);
+
+        // Opt-in metadata preserves the array contract used by older clients.
+        return response()->json($req->boolean('include_draws')
+            ? ['draws' => array_keys(LotteryHistory::times($type)), 'records' => $records]
+            : $records)->header('Cache-Control', 'no-store');
     }
 
     public function calendar(Request $req)
@@ -31,7 +30,7 @@ class LotteryController extends Controller
         $records = $this->monthlyRecords($year, $month, 2)->groupBy('date');
         $clocks = Clock::orderBy('id')->get(['id', 'hour', 'minute', 'morning']);
         $draws = [];
-        foreach (self::THAI_2D_DRAWS as $time => $label) {
+        foreach (LotteryHistory::times() as $time => $label) {
             $clock = $clocks->first(fn ($clock) => $this->clockTime($clock) === $time);
             $draws[] = ['clock_id' => $clock?->id, 'draw_time' => $time,
                 'draw_label' => $label, 'record_only' => in_array($time, ['09:30', '14:00'], true)];
@@ -44,7 +43,7 @@ class LotteryController extends Controller
                 continue;
             }
 
-            $results = array_fill_keys(array_keys(self::THAI_2D_DRAWS), null);
+            $results = array_fill_keys(array_keys(LotteryHistory::times()), null);
             foreach ($records->get($day->toDateString(), collect()) as $record) {
                 if (array_key_exists($record->draw_time ?? '', $results)) {
                     // Preserve the most recent entry if older releases contain duplicates.
@@ -56,7 +55,8 @@ class LotteryController extends Controller
         }
 
         return response()->json(['year' => $year, 'month' => $month, 'type' => 2,
-            'timezone' => 'Asia/Yangon', 'draws' => $draws, 'days' => $days]);
+            'timezone' => 'Asia/Yangon', 'draws' => $draws, 'days' => $days])
+            ->header('Cache-Control', 'no-store');
     }
 
     private function monthParameters(Request $req, bool $calendar = false): array
@@ -74,7 +74,7 @@ class LotteryController extends Controller
 
     private function monthlyRecords(int $year, int $month, int $type)
     {
-        return Lottery::with('clock:id,hour,minute,second,morning')
+        return Lottery::visibleDraws()->with('clock:id,hour,minute,second,morning')
             ->whereYear('created_at', $year)->whereMonth('created_at', $month)
             ->where('lottery_type_id', $type)
             ->orderBy('created_at')->orderBy('id')->get()

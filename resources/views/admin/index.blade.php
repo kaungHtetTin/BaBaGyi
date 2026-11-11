@@ -102,18 +102,22 @@
                             </button>
                         </div>
                         <table class="mini-table" aria-label="Thai 2D results">
+                            @if(\App\Services\LotteryHistory::extraDrawsEnabled())
                             <tr>
                                 <td>09:30 AM</td>
                                 <td><strong id="2d_result_num_0930">{{ $dailyHistory[2]['09:30']['number'] ?? '--' }}</strong></td>
                             </tr>
+                            @endif
                             <tr>
                                 <td>12:01 PM</td>
                                 <td><strong id="2d_result_num_1">{{ $dailyHistory[2]['12:01']['number'] ?? '--' }}</strong></td>
                             </tr>
+                            @if(\App\Services\LotteryHistory::extraDrawsEnabled())
                             <tr>
                                 <td>02:00 PM</td>
                                 <td><strong id="2d_result_num_1400">{{ $dailyHistory[2]['14:00']['number'] ?? '--' }}</strong></td>
                             </tr>
+                            @endif
                             <tr>
                                 <td>04:30 PM</td>
                                 <td><strong id="2d_result_num_2">{{ $dailyHistory[2]['16:30']['number'] ?? '--' }}</strong></td>

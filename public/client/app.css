@@ -438,9 +438,14 @@ a {
 .service-card:nth-child(2) .rate {
     color: var(--blue);
 }
-.service-card > .icon {
-    align-self: flex-end;
+.service-card .service-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     margin-top: 4px;
+    color: var(--ink);
+    font-size: 14px;
 }
 .support-row {
     display: flex;

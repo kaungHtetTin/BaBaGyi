@@ -34,7 +34,7 @@ import {
     clockLabel,
 } from "./core.js";
 import {
-    DRAW_TIMES,
+    historyDrawTimes,
     permutations,
     quickPick,
     toggleNumbers,
@@ -94,10 +94,7 @@ function lottery(params) {
     const type = Number(params.type) === 3 ? 3 : 2;
     const resultCards =
         type === 2
-            ? DRAW_TIMES.map(
-                  (time) =>
-                      `<div class="result-card"><strong data-saved="${time}">--</strong><span>${esc(drawLabel(time))}</span></div>`,
-              ).join("")
+            ? ""
             : [1, 2]
                   .map(
                       (n) =>
@@ -108,7 +105,7 @@ function lottery(params) {
         page(
             `MM ${type}D`,
             "ကံစမ်းမည်",
-            `<div class="page"><h1 class="title">MM ${type}D</h1><p class="caption">${esc(t("ui_live_result"))}</p><section class="navy-card live-card"><strong class="live-number" data-live>--</strong><div class="live-info"><strong data-today>${esc(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Yangon", weekday: "short", month: "short", day: "numeric" }).format(new Date()))}</strong><span data-stock></span></div></section><h2 class="section-title">${esc(t("ui_previous_results"))}</h2><div class="results-grid">${resultCards}</div><h2 class="section-title">${esc(t("home_services"))}</h2><div class="action-tiles"><button data-action="buy">${icon("round_add_reaction_24")}<span>${esc(t("take_lottery"))}</span></button><button data-nav="calendar?type=${type}">${icon("round_calendar_month_24")}<span>${esc(t("record_calender"))}</span></button><button data-nav="vouchers?type=${type}">${icon("baseline_format_list_bulleted_24")}<span>${esc(t("my_lottery_history"))}</span></button></div><div data-loading></div>${errorBox()}</div>`,
+            `<div class="page"><h1 class="title">MM ${type}D</h1><p class="caption">${esc(t("ui_live_result"))}</p><section class="navy-card live-card"><strong class="live-number" data-live>--</strong><div class="live-info"><strong data-today>${esc(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Yangon", weekday: "short", month: "short", day: "numeric" }).format(new Date()))}</strong><span data-stock></span></div></section><h2 class="section-title">${esc(t("ui_previous_results"))}</h2><div class="results-grid">${resultCards}</div><h2 class="section-title">${esc(t("home_services"))}</h2><div class="action-tiles"><button data-action="buy">${icon("round_add_reaction_24")}<span>${esc(t(type === 2 ? "home_play_now" : "take_lottery"))}</span></button><button data-nav="calendar?type=${type}">${icon("round_calendar_month_24")}<span>${esc(t("record_calender"))}</span></button><button data-nav="vouchers?type=${type}">${icon("baseline_format_list_bulleted_24")}<span>${esc(t("my_lottery_history"))}</span></button></div><div data-loading></div>${errorBox()}</div>`,
         ),
         async (signal) => {
             await ensureType(signal);
@@ -122,7 +119,7 @@ function lottery(params) {
                     if (type === 2)
                         tasks.push(
                             api(
-                                `lotteries/records?type=2&year=${p.year}&month=${Number(p.month)}`,
+                                `lotteries/records?type=2&year=${p.year}&month=${Number(p.month)}&include_draws=1`,
                                 { signal },
                             ),
                         );
@@ -165,10 +162,11 @@ function lottery(params) {
                         }
                     }
                     if (type === 2 && results[1].status === "fulfilled") {
-                        $$(view.element, "[data-saved]").forEach(
-                            (x) => (x.textContent = "--"),
-                        );
-                        for (const row of results[1].value) {
+                        const data = results[1].value;
+                        $(view.element, ".results-grid").innerHTML = historyDrawTimes(data).map(
+                            (time) => `<div class="result-card"><strong data-saved="${time}">--</strong><span>${esc(drawLabel(time))}</span></div>`,
+                        ).join("");
+                        for (const row of data.records || (Array.isArray(data) ? data : [])) {
                             if (row.date === today()) {
                                 const target = $(
                                     view.element,
@@ -215,7 +213,7 @@ function calendar(params) {
         page(
             "Thai 2D",
             t("record_calender"),
-            `<div class="page"><div class="calendar-header"><button class="icon-button" data-action="previous" aria-label="Previous ${type === 2 ? "month" : "year"}">${icon("round_arrow_back_ios_24")}</button><strong data-month></strong><button class="icon-button" data-action="next" aria-label="Next ${type === 2 ? "month" : "year"}">${icon("round_arrow_forward_ios_24")}</button></div>${type === 2 ? `<p class="calendar-note">${esc(t("thai_2d_calendar_times"))}</p><div class="weekdays">${["Mon", "Tue", "Wed", "Thu", "Fri"].map((x) => `<span>${x}</span>`).join("")}</div>` : ""}<div data-loading>${loading()}</div>${errorBox()}</div>`,
+            `<div class="page"><div class="calendar-header"><button class="icon-button" data-action="previous" aria-label="Previous ${type === 2 ? "month" : "year"}">${icon("round_arrow_back_ios_24")}</button><strong data-month></strong><button class="icon-button" data-action="next" aria-label="Next ${type === 2 ? "month" : "year"}">${icon("round_arrow_forward_ios_24")}</button></div>${type === 2 ? `<p class="calendar-note"></p><div class="weekdays">${["Mon", "Tue", "Wed", "Thu", "Fri"].map((x) => `<span>${x}</span>`).join("")}</div>` : ""}<div data-loading>${loading()}</div>${errorBox()}</div>`,
         ),
         (signal) => load(signal),
     );
@@ -241,8 +239,10 @@ function calendar(params) {
             if (signal?.aborted || version !== generation) return;
             if (type === 2) {
                 const days = weekdayCalendar(year, month, data.days || []);
+                const drawTimes = historyDrawTimes(data);
+                $(view.element, ".calendar-note").textContent = drawTimes.map(drawLabel).join(" · ");
                 $(view.element, "[data-loading]").innerHTML =
-                    `<div class="calendar-grid">${days.map((day) => (day ? `<article class="calendar-day ${day.date === today() ? "today" : ""}"><span class="day-label">${day.day}</span>${DRAW_TIMES.map((time) => `<div class="day-result"><small>${time}</small><strong>${esc(day.results?.[time]?.number ?? "--")}</strong></div>`).join("")}</article>` : "<div></div>")).join("")}</div>`;
+                    `<div class="calendar-grid">${days.map((day) => (day ? `<article class="calendar-day ${day.date === today() ? "today" : ""}"><span class="day-label">${day.day}</span>${drawTimes.map((time) => `<div class="day-result"><small>${time}</small><strong>${esc(day.results?.[time]?.number ?? "--")}</strong></div>`).join("")}</article>` : "<div></div>")).join("")}</div>`;
             } else {
                 $(view.element, "[data-loading]").innerHTML =
                     `<div class="months-grid">${Array.from({ length: 12 }, (_, i) => `<article class="surface month-card">${new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" }).format(new Date(Date.UTC(year, i, 1)))}${[1, 16].map((day) => `<strong>${esc(data.filter((x) => Number(x.month) === i + 1 && Number((x.created_at || "").slice(8, 10)) === day).at(-1)?.number ?? "--")}</strong><small>${day}</small>`).join("")}</article>`).join("")}</div>`;

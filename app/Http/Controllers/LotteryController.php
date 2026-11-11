@@ -125,7 +125,7 @@ class LotteryController extends Controller
         $month = CarbonImmutable::create((int) ($filters['year'] ?? $today->year),
             (int) ($filters['month'] ?? $today->month), 1, 0, 0, 0, 'Asia/Yangon');
 
-        $records = Lottery::with('clock:id,hour,minute,second,morning')
+        $records = Lottery::visibleDraws()->with('clock:id,hour,minute,second,morning')
             ->where('lottery_type_id', $type)
             ->whereYear('created_at', $month->year)->whereMonth('created_at', $month->month)
             ->orderBy('created_at')->orderBy('id')->get();
@@ -140,7 +140,7 @@ class LotteryController extends Controller
                 'label' => $clock ? CarbonImmutable::createFromFormat('!H:i', $time)->format('h:i A') : 'Draw'];
         })->groupBy('date')->map(fn ($rows) => $rows->keyBy('time'));
 
-        $draws = ['09:30' => '09:30 AM', '12:01' => '12:01 PM', '14:00' => '02:00 PM', '16:30' => '04:30 PM'];
+        $draws = LotteryHistory::times($type);
         $days = collect();
         $gridEnd = $month->endOfMonth()->endOfWeek(CarbonImmutable::SUNDAY);
         for ($date = $month->startOfWeek(CarbonImmutable::MONDAY); $date->lessThanOrEqualTo($gridEnd); $date = $date->addDay()) {

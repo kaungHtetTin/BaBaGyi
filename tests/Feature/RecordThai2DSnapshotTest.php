@@ -15,6 +15,7 @@ class RecordThai2DSnapshotTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['lottery.thai_2d_extra_draws_enabled' => true]);
 
         // Never migrate or write to the project's configured MySQL database.
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:',
@@ -48,11 +49,28 @@ class RecordThai2DSnapshotTest extends TestCase
     {
         Http::swap(new \Illuminate\Http\Client\Factory());
         Http::preventStrayRequests();
-        Http::fake(['api.thaistock2d.com/live' => Http::response([
+        Http::fake(['api.thaistock2d.com/live' => Http::sequence()->push([
             'server_time' => CarbonImmutable::now('Asia/Yangon')->toDateTimeString(),
             'live' => array_merge([
             'twod' => '07', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:00',
-        ], $overrides)])]);
+        ], $overrides)])->push([
+            'server_time' => CarbonImmutable::now('Asia/Yangon')->setSecond(4)->toDateTimeString(),
+        ])]);
+    }
+
+    public function test_disabled_draws_do_not_fetch_save_or_register_snapshot_schedules(): void
+    {
+        config(['lottery.thai_2d_extra_draws_enabled' => false]);
+        Http::fake();
+        foreach (['09:30', '14:00'] as $time) {
+            $this->freezeAt('2026-11-09 '.$time.':00');
+            $this->artisan('lottery:record-thai-2d', ['time' => $time])->assertExitCode(0);
+        }
+        Http::assertNothingSent();
+        $this->assertDatabaseCount('lotteries', 0);
+        $events = collect($this->app->make(Schedule::class)->events());
+        $this->assertFalse($events->contains(fn ($event) => str_contains($event->command, 'lottery:record-thai-2d')));
+        $this->assertTrue($events->contains(fn ($event) => str_contains($event->command, 'command:runat1201pm')));
     }
 
     public function test_both_times_save_history_only_even_in_manual_mode(): void
@@ -180,7 +198,7 @@ class RecordThai2DSnapshotTest extends TestCase
             && $event->expression === '30-45 16 * * *'));
     }
 
-    public function test_capture_waits_for_exact_server_second_for_both_slots(): void
+    public function test_capture_saves_first_valid_digit_in_window_for_both_slots(): void
     {
         foreach (['09:30' => 11, '14:00' => 13] as $time => $clockId) {
             $target = CarbonImmutable::parse('2026-11-09 '.$time.':00', 'Asia/Yangon');
@@ -194,6 +212,10 @@ class RecordThai2DSnapshotTest extends TestCase
                 ->push(['server_time' => $target->toDateTimeString(), 'live' => [
                     'twod' => '07', 'date' => '2026-11-09',
                     'time' => $target->subSecond()->toDateTimeString(),
+                ]])
+                ->push(['server_time' => $target->addSecond()->toDateTimeString(), 'live' => [
+                    'twod' => '89', 'date' => '2026-11-09',
+                    'time' => $target->addSecond()->toDateTimeString(),
                 ]])]);
 
             $this->artisan('lottery:record-thai-2d', ['time' => $time])->assertExitCode(0);
@@ -233,17 +255,53 @@ class RecordThai2DSnapshotTest extends TestCase
             'created_at' => '2026-11-09 09:30:00']);
     }
 
-    public function test_polling_that_skips_the_exact_second_does_not_save(): void
+    /** @dataProvider captureWindowSeconds */
+    public function test_polling_accepts_first_valid_digit_at_either_later_second_for_both_slots(int $second): void
+    {
+        foreach (['09:30' => 11, '14:00' => 13] as $time => $clockId) {
+            $target = CarbonImmutable::parse('2026-11-09 '.$time.':00', 'Asia/Yangon');
+            // Local recording time does not select the digit.
+            $this->freezeAt($target->addSeconds(8)->toDateTimeString());
+            Http::swap(new \Illuminate\Http\Client\Factory());
+            Http::preventStrayRequests();
+            Http::fake(['api.thaistock2d.com/live' => Http::sequence()
+                ->push(['server_time' => $target->subSecond()->toDateTimeString()])
+                ->push(['server_time' => $target->addSeconds($second)->toDateTimeString(),
+                    'live' => ['twod' => '99', 'date' => '2026-11-09',
+                        'time' => $target->subSeconds(2)->toDateTimeString()]])]);
+
+            $this->artisan('lottery:record-thai-2d', ['time' => $time])->assertExitCode(0);
+            $this->assertDatabaseHas('lotteries', ['clock_id' => $clockId, 'number' => '99',
+                'created_at' => $target->toDateTimeString()]);
+            Http::assertSentCount(2);
+        }
+    }
+
+    public static function captureWindowSeconds(): array
+    {
+        return [[1], [2], [3]];
+    }
+
+    public function test_invalid_digit_in_window_is_skipped_until_first_valid_digit(): void
     {
         Http::fake(['api.thaistock2d.com/live' => Http::sequence()
-            ->push(['server_time' => '2026-11-09 09:29:59'])
+            ->push(['server_time' => '2026-11-09 09:30:00',
+                'live' => ['twod' => '--', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:00']])
             ->push(['server_time' => '2026-11-09 09:30:01',
-                'live' => ['twod' => '99', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:01']])]);
+                'live' => ['twod' => '89', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:00']])]);
 
-        $this->artisan('lottery:record-thai-2d', ['time' => '09:30'])->assertExitCode(1);
-
-        $this->assertDatabaseCount('lotteries', 0);
+        $this->artisan('lottery:record-thai-2d', ['time' => '09:30'])->assertExitCode(0);
+        $this->assertDatabaseHas('lotteries', ['number' => '89']);
         Http::assertSentCount(2);
+    }
+
+    public function test_digit_at_second_four_is_outside_the_window(): void
+    {
+        $this->freezeAt('2026-11-09 09:30:04');
+        $this->fakeLive(['time' => '2026-11-09 09:30:04']);
+        $this->artisan('lottery:record-thai-2d', ['time' => '09:30'])->assertExitCode(1);
+        $this->assertDatabaseCount('lotteries', 0);
+        Http::assertSentCount(1);
     }
 
     /** @dataProvider invalidServerTimes */

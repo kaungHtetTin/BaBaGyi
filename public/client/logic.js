@@ -1,4 +1,10 @@
 export const DRAW_TIMES = ["09:30", "12:01", "14:00", "16:30"];
+export function historyDrawTimes(data) {
+    const draws = data?.draws;
+    if (!Array.isArray(draws)) return ["12:01", "16:30"];
+    const times = draws.map((draw) => typeof draw === "string" ? draw : draw.draw_time);
+    return DRAW_TIMES.filter((time) => times.includes(time));
+}
 export function next3dDraw(parts) {
     const date =
         Number(parts.day) > 16

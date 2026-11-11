@@ -8,7 +8,15 @@ import {
     drawClosed,
     weekdayCalendar,
     next3dDraw,
+    historyDrawTimes,
 } from "../../public/client/logic.js";
+
+test("history uses explicit draw metadata even when there are no results", () => {
+    assert.deepEqual(historyDrawTimes({draws: ["12:01", "16:30"], records: []}), ["12:01", "16:30"]);
+    assert.deepEqual(historyDrawTimes({draws: [{draw_time: "09:30"}, {draw_time: "14:00"}]}), ["09:30", "14:00"]);
+    assert.deepEqual(historyDrawTimes({draws: []}), []);
+    assert.deepEqual(historyDrawTimes([]), ["12:01", "16:30"]);
+});
 
 test("reverse selections retain zeroes and deduplicate repeated digits", () => {
     assert.deepEqual(permutations("007").sort(), ["007", "070", "700"]);

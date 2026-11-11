@@ -11,7 +11,8 @@ const clocks = [
     { id: 2, hour: 12, minute: 1, morning: 0, close_before: 30 },
     { id: 4, hour: 4, minute: 30, morning: 0, close_before: 30 },
 ];
-async function fixtures(page, { authenticated = true, partial = false } = {}) {
+async function fixtures(page, { authenticated = true, partial = false, extraDraws = true } = {}) {
+    const drawTimes = extraDraws ? ["09:30", "12:01", "14:00", "16:30"] : ["12:01", "16:30"];
     const calls = [];
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -104,18 +105,21 @@ async function fixtures(page, { authenticated = true, partial = false } = {}) {
             data = { live: { twod: "74", set: "1,234.56", value: "2,345.67" } };
         else if (endpoint === "remote/thai-3d")
             data = { number: "Soon", history: {} };
-        else if (endpoint === "lotteries/records")
-            data = ["07", "12", "34", "74"].map((number, i) => ({
+        else if (endpoint === "lotteries/records") {
+            const records = ["07", "12", "34", "74"].map((number, i) => ({
                 number,
                 date: "2026-11-09",
                 draw_time: ["09:30", "12:01", "14:00", "16:30"][i],
-            }));
+            })).filter((row) => drawTimes.includes(row.draw_time));
+            data = url.searchParams.has("include_draws") ? {draws: drawTimes, records} : records;
+        }
         else if (endpoint === "lotteries/calendar") {
             const year = Number(url.searchParams.get("year"));
             const month = Number(url.searchParams.get("month"));
             data = {
                 year,
                 month,
+                draws: drawTimes.map((draw_time) => ({draw_time})),
                 days: [
                     {
                         date: `${year}-${String(month).padStart(2, "0")}-09`,
