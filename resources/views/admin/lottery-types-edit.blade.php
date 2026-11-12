@@ -59,6 +59,17 @@
                         @enderror
                     </label>
 
+                    @if ($lottery_type->id == 3)
+                        <label class="form-field">
+                            <span>Bonus multiplication</span>
+                            <input type="number" name="bonus_multiplication" min="1" step="1" required
+                                value="{{ old('bonus_multiplication', $lottery_type->bonus_coefficient) }}">
+                            @error('bonus_multiplication')
+                                <p class="field-error">{{ $message }}</p>
+                            @enderror
+                        </label>
+                    @endif
+
                     <label class="form-field">
                         <span>Close before (minutes)</span>
                         <input type="text" placeholder="Enter minutes" name="close_before"

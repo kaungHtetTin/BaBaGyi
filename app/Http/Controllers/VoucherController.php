@@ -8,6 +8,7 @@ use App\Models\Voucher;
 use App\Models\WalletHistory;
 use App\Models\User;
 use App\Services\AdminVoucherListing;
+use Illuminate\Support\Facades\DB;
 
 
 class VoucherController extends Controller
@@ -32,27 +33,27 @@ class VoucherController extends Controller
     }
 
     public function approve($id){
-        $voucher = Voucher::find($id);
-        $user = $voucher->user;
-        $lottery_type = $voucher->lottery_type;
+        DB::transaction(function () use ($id) {
+            $voucher = Voucher::whereKey($id)->lockForUpdate()->firstOrFail();
+            abort_unless($voucher->win == 1 && $voucher->verified == 0, 422, 'This voucher is not an unpaid winner.');
+            $user = User::whereKey($voucher->user_id)->lockForUpdate()->firstOrFail();
+            $payout = $voucher->payoutAmount();
 
-        $coefficient = $lottery_type->coefficient;
+            $user->balance = $user->balance + $payout;
+            $user->save();
 
-        
-        $user->balance = $user->balance + $voucher->amount * $coefficient;
-        $user->save();
+            $wallet_history = new WalletHistory();
+            $wallet_history->user_id = $user->id;
+            $wallet_history->title = "ထီပေါက်";
+            $wallet_history->amount = $payout;
+            $wallet_history->income = 1;
+            $wallet_history->save();
 
-        $wallet_history = new WalletHistory();
-        $wallet_history->user_id = $user->id;
-        $wallet_history->title = "ထီပေါက်";
-        $wallet_history->amount = $voucher->amount * $coefficient;
-        $wallet_history->income = 1;
-        $wallet_history->save();
-
-        $voucher->verified = 1;
-        $voucher->verified_by = Auth::user()->id;
-        $voucher->win_amount = $voucher->amount * $coefficient;
-        $voucher->save();
+            $voucher->verified = 1;
+            $voucher->verified_by = Auth::user()->id;
+            $voucher->win_amount = $payout;
+            $voucher->save();
+        });
     
         return back()->with('msg','The voucher was successfully approved');
     }

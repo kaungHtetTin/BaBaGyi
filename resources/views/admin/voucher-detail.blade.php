@@ -5,12 +5,12 @@
 
     $payAmount = null;
     if ($voucher->win == 1) {
-        $payAmount = $voucher->win_amount > 0 ? $voucher->win_amount : $voucher->amount * $voucher->lottery_type->coefficient;
+        $payAmount = $voucher->win_amount > 0 ? $voucher->win_amount : $voucher->payoutAmount();
     }
 
     if ($voucher->win == 1) {
         $statusClass = 'status-success';
-        $statusLabel = 'Win';
+        $statusLabel = $voucher->lottery_type_id == 3 && $voucher->bonus_win == 1 ? 'Bonus win' : 'Win';
     } elseif ($voucher->verified == 1) {
         $statusClass = $voucher->bonus_win == 1 ? 'status-warning' : 'status-danger';
         $statusLabel = $voucher->bonus_win == 1 ? 'Bonus fail' : 'Fail';

@@ -104,6 +104,7 @@ class DatabaseSeeder extends Seeder
         LotteryType::create([
             'type'=>'Thai 3D',
             'coefficient'=>500,
+            'bonus_coefficient'=>10,
             'open'=>1,
             'release_mode'=>1,
             'api_url'=>"",

@@ -7,7 +7,7 @@ use App\Models\Lottery;
 use App\Models\Voucher;
 use App\Models\LotteryType;
 use App\Models\Number;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RunTaskFor3D extends Command
@@ -33,7 +33,8 @@ class RunTaskFor3D extends Command
      */
     public function handle()
     {
-        $day = date('d');
+        $drawDate = now('Asia/Yangon');
+        $day = $drawDate->day;
         $lottery_type_id = 3;
         $clock_id = 5;
 
@@ -42,10 +43,10 @@ class RunTaskFor3D extends Command
 
         if($day == 1 || $day == 16){
             
-            $response = file_get_contents("https://www.calamuseducation.com/api-3d.php");
-            $result = json_decode($response,true);
+            $result = Http::get("https://www.calamuseducation.com/api-3d.php")->throw()->json();
 
-            $win_num = $result['number'];
+            $win_num = (string) $result['number'];
+            validator(['number' => $win_num], ['number' => ['required', 'regex:/\A[0-9]{3}\z/']])->validate();
 
             $lottery = new Lottery();
             $lottery->lottery_type_id = 3;
@@ -62,56 +63,11 @@ class RunTaskFor3D extends Command
                 'timezone' => 'Asia/Yangon',
             ]);
 
-            Voucher::where(DB::raw("DAY(created_at)"),date('d'))
-            ->where(DB::raw("MONTH(created_at)"),date('m'))
-            ->where(DB::raw("YEAR(created_at)"),date('Y'))
-            ->where('lottery_type_id',3)
-            ->where('clock_id',5)
-            ->where('number',$win_num)
-            ->update(['win'=>1]);
-
-            // bonus win တွတ်ဂဏန်း
-            $last_digit = $win_num[2];
-            $second_digit = $win_num[1];
-            $up_number = $last_digit+1;
-            $up_second = $second_digit;
-            if($up_number>9){
-                $up_number = 0;
-                $up_second = $second_digit+1;
-            }
-            $down_number = $last_digit-1;
-            $down_second = $second_digit;
-            if($down_number<0){
-                $down_number = 9;
-                $down_second = $second_digit-1;
-            }
-
-            $upper_win = $win_num[0].$up_second.$up_number;
-            $down_win = $win_num[0].$down_second.$down_number;
-
-            Voucher::where(DB::raw("DAY(created_at)"),date('d'))
-            ->where(DB::raw("MONTH(created_at)"),date('m'))
-            ->where(DB::raw("YEAR(created_at)"),date('Y'))
-            ->where('lottery_type_id',3)
-            ->where('clock_id',5)
-            ->where('number',$upper_win)
-            ->update(['bonus_win'=>1]);
-
-            Voucher::where(DB::raw("DAY(created_at)"),date('d'))
-            ->where(DB::raw("MONTH(created_at)"),date('m'))
-            ->where(DB::raw("YEAR(created_at)"),date('Y'))
-            ->where('lottery_type_id',3)
-            ->where('clock_id',5)
-            ->where('number',$down_win)
-            ->update(['bonus_win'=>1]);
-
-            Voucher::where(DB::raw("DAY(created_at)"),date('d'))
-            ->where(DB::raw("MONTH(created_at)"),date('m'))
-            ->where(DB::raw("YEAR(created_at)"),date('Y'))
-            ->where('lottery_type_id',3)
-            ->where('clock_id',5)
-            ->where('number','!=',$win_num)
-            ->update(['win'=>0,'verified'=>1]);
+            app(\App\Services\ThreeDWinRules::class)->apply(
+                Voucher::where('lottery_type_id', 3)->where('clock_id', 5)
+                    ->whereDate('created_at', $drawDate->toDateString()),
+                $win_num
+            );
 
             Number::where('clock_id',$clock_id)->where('lottery_type_id',$lottery_type_id)->update(['demand'=>0,'disable'=>0]);
         }

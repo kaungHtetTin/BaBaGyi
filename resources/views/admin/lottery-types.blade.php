@@ -51,7 +51,12 @@
                                     <strong class="table-primary-line">{{ $lottery->lottery_type->type }}</strong>
                                     <small class="table-secondary-line">Lottery type</small>
                                 </td>
-                                <td><span class="money-cell">{{ $lottery->lottery_type->coefficient }}x</span></td>
+                                <td>
+                                    <span class="money-cell">{{ $lottery->lottery_type->coefficient }}x</span>
+                                    @if ($lottery->lottery_type_id == 3)
+                                        <small class="table-secondary-line">Bonus {{ $lottery->lottery_type->bonus_coefficient }}x</small>
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="clock-pill">{{ $lotteryHour }}:{{ $lotteryMinute }} {{ $clock->morning == 1 ? 'AM' : 'PM' }}</span>
                                 </td>

@@ -49,7 +49,7 @@ class UserController extends Controller
 
     public function vouchers($id){
         $user = User::find($id);
-        $vouchers = Voucher::with('lottery_type:id,type')->where('user_id',$user->id)->orderBy('id','desc')->paginate(100);
+        $vouchers = Voucher::with('lottery_type:id,type,coefficient,bonus_coefficient')->where('user_id',$user->id)->orderBy('id','desc')->paginate(100);
         return view('admin.user-vouchers',[
             'page_name'=> "Users",
             'user' => $user,

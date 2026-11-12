@@ -20,7 +20,7 @@
             return $voucher->win_amount;
         }
 
-        return $voucher->amount * $voucher->lottery_type->coefficient;
+        return $voucher->payoutAmount();
     };
 
     $statusClass = function ($voucher) {
@@ -37,7 +37,7 @@
 
     $statusLabel = function ($voucher) {
         if ($voucher->win == 1) {
-            return 'Win';
+            return $voucher->lottery_type_id == 3 && $voucher->bonus_win == 1 ? 'Bonus win' : 'Win';
         }
 
         if ($voucher->verified == 1) {

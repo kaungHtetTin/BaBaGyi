@@ -107,11 +107,13 @@ class AdminVoucherListing
                 break;
         }
 
-        $coefficient = (float) LotteryType::whereKey($type)->value('coefficient');
+        $lotteryType = LotteryType::findOrFail($type);
+        $coefficient = (float) $lotteryType->coefficient;
+        $bonusCoefficient = $type === 3 ? (float) $lotteryType->bonus_coefficient : $coefficient;
         $summary = (clone $query)->selectRaw('COALESCE(SUM(amount), 0) AS sales,
-            COALESCE(SUM(CASE WHEN win = 1 THEN CASE WHEN win_amount > 0 THEN win_amount ELSE amount * ? END ELSE 0 END), 0) AS payout,
+            COALESCE(SUM(CASE WHEN win = 1 THEN CASE WHEN win_amount > 0 THEN win_amount ELSE amount * CASE WHEN bonus_win = 1 THEN ? ELSE ? END END ELSE 0 END), 0) AS payout,
             COALESCE(SUM(CASE WHEN verified = 0 THEN 1 ELSE 0 END), 0) AS pending,
-            COALESCE(SUM(CASE WHEN win = 1 THEN 1 ELSE 0 END), 0) AS winners', [$coefficient])->first();
+            COALESCE(SUM(CASE WHEN win = 1 THEN 1 ELSE 0 END), 0) AS winners', [$bonusCoefficient, $coefficient])->first();
 
         switch ($filters['sort']) {
             case 'newest':
@@ -134,7 +136,7 @@ class AdminVoucherListing
                 $query->orderBy('number');
         }
         $vouchers = $query->orderByDesc('id')->with(['user:id,name,email,phone,balance',
-            'clock:id,hour,minute,morning', 'lottery_type:id,coefficient', 'reviewer:id,name'])
+            'clock:id,hour,minute,morning', 'lottery_type:id,coefficient,bonus_coefficient', 'reviewer:id,name'])
             ->paginate($filters['per_page'])->withQueryString();
 
         return compact('vouchers', 'filters', 'clocks', 'admins', 'statuses', 'summary', 'title', 'type')

@@ -39,9 +39,13 @@ class LotteryTypeController extends Controller
         $req->validate([
             'multiplication'=>'required',
             'close_before'=>'required',
+            'bonus_multiplication' => $lottery_type->id == 3 ? 'required|integer|min:1|max:2147483647' : 'nullable',
         ]);
 
         $lottery_type->coefficient = $req->multiplication;
+        if ($lottery_type->id == 3) {
+            $lottery_type->bonus_coefficient = $req->bonus_multiplication;
+        }
         $lottery_type->save();
 
         $lottery_clock->close_before = $req->close_before;

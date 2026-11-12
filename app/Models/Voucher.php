@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Voucher extends Model
 {
     use HasFactory;
+
+    public function payoutAmount(): int
+    {
+        $multiplier = $this->lottery_type_id == 3 && $this->bonus_win == 1
+            ? $this->lottery_type->bonus_coefficient
+            : $this->lottery_type->coefficient;
+
+        return (int) ($this->amount * $multiplier);
+    }
     public function user(){
         return $this->belongsTo(User::class);
     }
