@@ -92,6 +92,9 @@ async function chooseClock(type) {
 }
 function lottery(params) {
     const type = Number(params.type) === 3 ? 3 : 2;
+    const serviceLabels = type === 3
+        ? ["ကစားမည်", "3D ပေါက်စဉ်", "3D စာရင်း"]
+        : ["ကစားမည်", "2D ပေါက်စဉ်", "2D စာရင်း"];
     const resultCards =
         type === 2
             ? ""
@@ -105,7 +108,7 @@ function lottery(params) {
         page(
             `MM ${type}D`,
             "ကံစမ်းမည်",
-            `<div class="page"><h1 class="title">MM ${type}D</h1><p class="caption">${esc(t("ui_live_result"))}</p><section class="navy-card live-card"><strong class="live-number" data-live>--</strong><div class="live-info"><strong data-today>${esc(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Yangon", weekday: "short", month: "short", day: "numeric" }).format(new Date()))}</strong><span data-stock></span></div></section><h2 class="section-title">${esc(t("ui_previous_results"))}</h2><div class="results-grid">${resultCards}</div><h2 class="section-title">${esc(t("home_services"))}</h2><div class="action-tiles"><button data-action="buy">${icon("round_add_reaction_24")}<span>${esc(t(type === 2 ? "home_play_now" : "take_lottery"))}</span></button><button data-nav="calendar?type=${type}">${icon("round_calendar_month_24")}<span>${esc(t("record_calender"))}</span></button><button data-nav="vouchers?type=${type}">${icon("baseline_format_list_bulleted_24")}<span>${esc(t("my_lottery_history"))}</span></button></div><div data-loading></div>${errorBox()}</div>`,
+            `<div class="page"><h1 class="title">MM ${type}D</h1><p class="caption">${esc(t("ui_live_result"))}</p><section class="navy-card live-card"><strong class="live-number" data-live>--</strong><div class="live-info"><strong data-today>${esc(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Yangon", weekday: "short", month: "short", day: "numeric" }).format(new Date()))}</strong><span data-stock></span></div></section><h2 class="section-title">${esc(t("ui_previous_results"))}</h2><div class="results-grid">${resultCards}</div><h2 class="section-title">${esc(t("home_services"))}</h2><div class="action-tiles"><button data-action="buy">${icon("round_add_reaction_24")}<span>${esc(serviceLabels[0])}</span></button><button data-nav="calendar?type=${type}">${icon("round_calendar_month_24")}<span>${esc(serviceLabels[1])}</span></button><button data-nav="vouchers?type=${type}">${icon("baseline_format_list_bulleted_24")}<span>${esc(serviceLabels[2])}</span></button></div><div data-loading></div>${errorBox()}</div>`,
         ),
         async (signal) => {
             await ensureType(signal);
