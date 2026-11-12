@@ -70,7 +70,7 @@ class RecordThai2DSnapshot extends Command
             }
 
             // Start before the draw so scheduler startup latency does not choose the digit.
-            // Bound polling with a monotonic clock even if the API clock stops advancing.
+            // Bound polling with a monotonic clock even if the live timestamp stops advancing.
             $deadline = hrtime(true) + 90_000_000_000;
             do {
                 $payload = Http::acceptJson()->withHeaders(['Cache-Control' => 'no-cache'])
@@ -78,30 +78,32 @@ class RecordThai2DSnapshot extends Command
                     ->get('https://api.thaistock2d.com/live')
                     ->throw()->json();
                 $serverValue = is_array($payload) ? ($payload['server_time'] ?? null) : null;
-                if (! is_string($serverValue)) {
-                    return $this->failedSnapshot($time, 'The API server_time is missing or invalid.');
+                $live = is_array($payload) ? ($payload['live'] ?? null) : null;
+                $liveValue = is_array($live) ? ($live['time'] ?? null) : null;
+                if (! is_string($liveValue)) {
+                    return $this->failedSnapshot($time, 'The API live.time is missing or invalid.');
                 }
-                $serverTime = CarbonImmutable::createFromFormat('!Y-m-d H:i:s', $serverValue, 'Asia/Yangon');
-                if ($serverTime->format('Y-m-d H:i:s') !== $serverValue
-                    || $serverTime->toDateString() !== $target->toDateString()) {
-                    return $this->failedSnapshot($time, 'The API server_time has an invalid format or date.');
+                $liveTime = CarbonImmutable::createFromFormat('!Y-m-d H:i:s', $liveValue, 'Asia/Yangon');
+                if ($liveTime->format('Y-m-d H:i:s') !== $liveValue
+                    || $liveTime->toDateString() !== $target->toDateString()) {
+                    return $this->failedSnapshot($time, 'The API live.time has an invalid format or date.');
                 }
-                if ($serverTime->gt($windowEnd)) {
-                    return $this->failedSnapshot($time, 'No valid live digit was observed within the API server capture window.', [
+                if ($liveTime->gt($windowEnd)) {
+                    return $this->failedSnapshot($time, 'No valid live digit was observed within the live timestamp capture window.', [
                         'target_time' => $target->toDateTimeString(),
                         'window_end' => $windowEnd->toDateTimeString(),
                         'server_time' => $serverValue,
+                        'live_time' => $liveValue,
                     ]);
                 }
-                $live = $payload['live'] ?? null;
-                if ($serverTime->gte($target) && $this->validLive($live, $serverTime, $target)) {
+                if ($liveTime->gte($target) && $this->validLive($live, $target)) {
                     break;
                 }
                 if (hrtime(true) >= $deadline) {
-                    return $this->failedSnapshot($time, 'Timed out waiting for a valid digit within the API server capture window.');
+                    return $this->failedSnapshot($time, 'Timed out waiting for a valid digit within the live timestamp capture window.');
                 }
                 // Poll five times per second near the target; once per second earlier.
-                usleep($target->getTimestamp() - $serverTime->getTimestamp() <= 2 ? 200_000 : 1_000_000);
+                usleep($target->getTimestamp() - $liveTime->getTimestamp() <= 2 ? 200_000 : 1_000_000);
             } while (true);
 
             $saved = DB::transaction(function () use ($records, $clock, $live, $target) {
@@ -144,26 +146,11 @@ class RecordThai2DSnapshot extends Command
         }
     }
 
-    private function validLive($live, CarbonImmutable $serverTime, CarbonImmutable $target): bool
+    private function validLive(array $live, CarbonImmutable $target): bool
     {
-        if (! is_array($live)
-            || ! is_string($live['twod'] ?? null)
-            || ! preg_match('/\A[0-9]{2}\z/', $live['twod'])
-            || ($live['date'] ?? null) !== $target->toDateString()
-            || ! is_string($live['time'] ?? null)) {
-            return false;
-        }
-
-        try {
-            $sourceTime = CarbonImmutable::createFromFormat('!Y-m-d H:i:s', $live['time'], 'Asia/Yangon');
-            $age = $serverTime->getTimestamp() - $sourceTime->getTimestamp();
-
-            return $sourceTime->format('Y-m-d H:i:s') === $live['time']
-                && $sourceTime->toDateString() === $target->toDateString()
-                && $age >= 0 && $age <= 300;
-        } catch (Throwable $exception) {
-            return false;
-        }
+        return is_string($live['twod'] ?? null)
+            && preg_match('/\A[0-9]{2}\z/', $live['twod'])
+            && ($live['date'] ?? null) === $target->toDateString();
     }
 
     private function failedSnapshot(string $time, string $reason, array $context = []): int

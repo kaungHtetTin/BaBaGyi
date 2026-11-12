@@ -60,7 +60,7 @@ overwritten. If an admin entered history before release, voucher settlement
 requires separate admin review. Failed database work rolls back so the next
 attempt can retry. Saved result timestamps use the draw time, while logs contain
 the actual recording time. Balances and betting cutoffs retain their existing
-behavior. The 09:30 and 14:00 captures continue to use API server time.
+behavior. The 09:30 and 14:00 captures select digits using the live data timestamp (`live.time`).
 
 For an unresolved draw, after checking the API and confirming there is no saved
 result for that draw, an operator can retry manually later on the **same Myanmar
@@ -69,9 +69,10 @@ The scheduler passes `--scheduled` to enforce its retry window; manual commands
 without that flag allow same-day recovery. Manual release mode still prevents
 automatic and command-line release.
 
-The source must return the exact target `server_time`, exactly two digits,
-today's date, and a live timestamp no more than five minutes behind the API
-clock and never ahead of it. Leading zeroes are kept.
+The source must return exactly two digits, today's date, and a `live.time`
+within the target draw's first four seconds (00 through 03, inclusive).
+`server_time` is logged for reference and does not select or reject the digit.
+Leading zeroes are kept.
 If the market/API has no fresh value at either time, no record is fabricated:
 the command exits unsuccessfully and logs the reason in the Laravel log.
 There is no later backfill with a different minute's live value.
@@ -210,23 +211,23 @@ lottery:record-thai-2d 14:00`. The scheduler starts these commands at **09:29**
 and **13:59**, one minute early, to absorb scheduler startup delay. Manual runs
 must start in the minute before or during the matching Myanmar minute.
 
-The command polls the live API using its top-level `server_time` as the draw
-clock. It saves the **first valid** `live.twod` from a response whose `server_time`
-is within **09:30:00–09:30:03** or **14:00:00–14:00:03**, inclusive, on today's
-Myanmar date, then stops polling immediately. Invalid live values are skipped
-while the window remains open. The local recording time does not need to match
-the API server time. `live.time` is the stock
-update timestamp and may lag `server_time`; it must be on today's date, no more
-than five minutes behind the API clock, and never in the future. The saved
+The command polls the live API using `live.time` as the draw clock. It saves
+the **first valid** `live.twod` whose `live.time` is within **09:30:00 to
+09:30:03** or **14:00:00 to 14:00:03**, inclusive, on today's Myanmar date,
+then stops polling immediately. Values timestamped before the target are
+skipped, even when `server_time` has already reached the target. Invalid
+live digits are skipped while the window remains open. A live timestamp
+after the window ends the capture without saving a later digit.
+The API's `server_time` is optional log metadata; it does not affect selection.
+The local recording time does not need to match the live timestamp. The saved
 history timestamp is the target draw time. Success logs include `win_digit`,
 `server_time`, `live_time`, and the local `recorded_at` time.
 
 Polling runs once per second, increasing to five requests per second within two
 seconds of the target. It stops after 90 seconds (plus any in-flight request,
-with a five-second HTTP timeout). A missing or invalid API server timestamp,
+with a five-second HTTP timeout). A missing or invalid live timestamp,
 HTTP failure, or capture window without a valid live digit produces a warning
 and no history row. There is no fallback to a digit outside the window.
 Network latency and API update frequency can still cause a missed window;
-the API's server clock does not guarantee
-that a request will observe every second. Keep the host clock synchronized so
+the API does not guarantee that a request will observe every live update. Keep the host clock synchronized so
 capture starts in the correct window. Existing settlement commands are unchanged.

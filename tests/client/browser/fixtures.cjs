@@ -46,8 +46,8 @@ async function fixtures(page, { authenticated = true, partial = false, extraDraw
             data = [{ id: 1, service: "Telegram", contact: "@mastergyi_test" }];
         else if (endpoint === "bankings")
             data = [
-                { id: 1, bank: "KBZ Pay", icon_url: "" },
-                { id: 2, bank: "Wave Pay", icon_url: "" },
+                { id: 1, bank: "KBZ Pay", icon_url: "img/payment-kbz-pay.jpg" },
+                { id: 2, bank: "Wave Pay", icon_url: "img/payment-wave-pay.jpg" },
             ];
         else if (endpoint === "payment-method")
             data = {

@@ -26,7 +26,8 @@ class ClientAppTest extends TestCase
 
     public function test_shell_is_public_and_separate_from_the_welcome_and_admin_pages(): void
     {
-        $this->get('/app')->assertOk()->assertViewIs('client')->assertSee('client/app.js')
+        $this->get('/app')->assertOk()->assertViewIs('client')->assertSee('/build/assets/')
+            ->assertSee('android-resources.json?v=')
             ->assertDontSee('secret123')->assertDontSee('client_token');
         $this->get('/')->assertOk()->assertViewIs('welcome')->assertSee(url('/app').'/');
         $this->get('/admin/login')->assertOk();

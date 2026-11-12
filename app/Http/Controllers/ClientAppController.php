@@ -11,6 +11,7 @@ class ClientAppController extends Controller
         return response()->view('client', [
             'clientConfig' => ['version' => '1.0.0', 'base' => url('/app').'/', 'scope' => url('/app'), 'assets' => asset('client').'/',
                 'api' => url('/app/api').'/', 'session' => url('/app/session'),
+                'resourcesUrl' => $this->resourcesUrl(),
                 'download' => route('app.download'), 'welcome' => route('index'),
                 'guides' => ['topup' => url('/guide/top-up'), 'withdraw' => url('/guide/withdraw')]],
         ])->header('Cache-Control', 'no-cache');
@@ -37,12 +38,25 @@ class ClientAppController extends Controller
             'images/mastergyi_logo.webp', 'images/mastergyi_avatar.webp', 'images/icon-192.png', 'images/icon-512.png', 'images/icon-maskable-512.png',
             'fonts/poppins_regular.woff2', 'fonts/poppins_medium.woff2', 'fonts/poppins_semibold.woff2', 'fonts/poppins_bold.woff2', 'fonts/Roboto-Regular.woff2', 'fonts/NotoSansMyanmarUI-Regular.woff2', 'fonts/NotoSansMyanmarUI-Bold.woff2'];
         foreach (glob(public_path('client/icons/*.svg')) as $file) $files[] = 'icons/'.basename($file);
-        $urls = array_map(fn ($file) => asset('client/'.$file), $files);
+        $urls = array_map(fn ($file) => $file === 'android-resources.json' ? $this->resourcesUrl() : asset('client/'.$file), $files);
+        $manifestPath = public_path('build/manifest.json');
+        $buildManifest = is_file($manifestPath) ? file_get_contents($manifestPath) : '{}';
+        foreach (json_decode($buildManifest, true, 512, JSON_THROW_ON_ERROR) as $entry) {
+            foreach (array_merge([$entry['file']], $entry['css'] ?? [], $entry['assets'] ?? []) as $file) {
+                $urls[] = asset('build/'.$file);
+            }
+        }
+        $urls = array_values(array_unique($urls));
         array_unshift($urls, url('/app'), url('/app').'/');
-        $version = hash('sha256', implode('', array_map(fn ($file) => is_file(public_path('client/'.$file)) ? hash_file('sha256', public_path('client/'.$file)) : '', $files)));
+        $version = hash('sha256', $buildManifest.hash_file('sha256', public_path('client/sw.js')).implode('', array_map(fn ($file) => is_file(public_path('client/'.$file)) ? hash_file('sha256', public_path('client/'.$file)) : '', $files)));
         $script = str_replace(['__SHELL_URLS__', '__CACHE_VERSION__'], [json_encode($urls), substr($version, 0, 16)], file_get_contents(public_path('client/sw.js')));
 
         return response($script, 200, ['Content-Type' => 'application/javascript',
             'Cache-Control' => 'no-cache', 'Service-Worker-Allowed' => parse_url(url('/app'), PHP_URL_PATH)]);
+    }
+
+    private function resourcesUrl(): string
+    {
+        return asset('client/android-resources.json').'?v='.substr(hash_file('sha256', public_path('client/android-resources.json')), 0, 16);
     }
 }

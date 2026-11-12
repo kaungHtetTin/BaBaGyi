@@ -1,9 +1,30 @@
 @php
     $voucherRows = $vouchers->getCollection();
-    $saleToday = $earning_today ?? 0;
-    $paybackToday = $give_Back_today ?? 0;
-    $pendingCount = $voucherRows->where('verified', 0)->count();
-    $winCount = $voucherRows->where('win', 1)->count();
+    $saleToday = $summary->sales;
+    $paybackToday = $summary->payout;
+    $pendingCount = $summary->pending;
+    $winCount = $summary->winners;
+    $advancedOpen = $errors->any() || !empty($filters['admin_id']) || isset($filters['amount_min']) || isset($filters['amount_max']) || $filters['sort'] !== 'queue' || $filters['per_page'] !== 50;
+    $today = \Carbon\CarbonImmutable::now('Asia/Yangon')->toDateString();
+    $datePresets = [
+        'Today' => [$today, $today],
+        'Yesterday' => [\Carbon\CarbonImmutable::now('Asia/Yangon')->subDay()->toDateString(), \Carbon\CarbonImmutable::now('Asia/Yangon')->subDay()->toDateString()],
+        'Last 7 days' => [\Carbon\CarbonImmutable::now('Asia/Yangon')->subDays(6)->toDateString(), $today],
+        'All dates' => [null, null],
+    ];
+    $chips = [];
+    foreach (['q' => 'Search', 'clock_id' => 'Draw', 'status' => 'Status', 'date_from' => 'From', 'date_to' => 'To', 'number' => 'Number', 'admin_id' => 'Admin', 'amount_min' => 'Min amount', 'amount_max' => 'Max amount'] as $key => $label) {
+        if (!isset($filters[$key]) || $filters[$key] === '') continue;
+        $value = $filters[$key];
+        if ($key === 'status') $value = $statuses[$value];
+        if ($key === 'clock_id') {
+            $selectedClock = $clocks->firstWhere('id', $value);
+            $value = sprintf('%02d:%02d %s', $selectedClock->hour, $selectedClock->minute, $selectedClock->morning ? 'AM' : 'PM');
+        }
+        if ($key === 'admin_id') $value = $value === 'unassigned' ? 'Unassigned' : $admins->firstWhere('id', $value)?->name;
+        if (in_array($key, ['amount_min', 'amount_max'])) $value = number_format($value).' MMK';
+        $chips[$key] = $label.': '.$value;
+    }
     $pageTitle = match ($title) {
         '2D Vouchers' => 'MM 2D Vouchers',
         '3D Vouchers' => 'MM 3D Vouchers',
@@ -61,8 +82,12 @@
 
 @extends('admin.master')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/admin-vouchers.css') }}?v={{ filemtime(public_path('css/admin-vouchers.css')) }}">
+@endpush
+
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid voucher-page">
         @if (session('msg'))
             <div class="alert alert-success">
                 {{ session('msg') }}
@@ -79,21 +104,21 @@
         <section class="report-metrics" aria-label="Voucher metrics">
             <article class="metric-card glass">
                 <span><i class="fas fa-ticket-alt"></i></span>
-                <small>Lottery sale</small>
+                <small>Matching sales</small>
                 <strong>{{ number_format($saleToday) }}</strong>
-                <p>MMK for current draw</p>
+                <p>MMK across all matching vouchers</p>
             </article>
             <article class="metric-card glass">
                 <span><i class="fas fa-coins"></i></span>
-                <small>Lottery win</small>
+                <small>Winning payout</small>
                 <strong>{{ number_format($paybackToday) }}</strong>
-                <p>MMK payout exposure</p>
+                <p>MMK paid + unpaid winning vouchers</p>
             </article>
             <article class="metric-card glass">
                 <span><i class="fas fa-clock"></i></span>
-                <small>Waiting</small>
+                <small>Awaiting action</small>
                 <strong>{{ number_format($pendingCount) }}</strong>
-                <p>On this page</p>
+                <p>Unpaid wins and waiting vouchers</p>
             </article>
         </section>
 
@@ -102,7 +127,122 @@
                 <div>
                     <p class="eyebrow">VOUCHER QUEUE</p>
                     <h2>{{ $pageTitle }}</h2>
-                    <p class="panel-subtitle">{{ number_format($vouchers->total()) }} total vouchers · {{ number_format($winCount) }} winners on this page</p>
+                    <p class="panel-subtitle">{{ number_format($vouchers->total()) }} matching vouchers · {{ number_format($winCount) }} winners across all results</p>
+                </div>
+            </div>
+
+            @if ($errors->any())
+                <div class="alert alert-danger" role="alert">
+                    <strong>Check your filters.</strong>
+                    <ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
+            @endif
+
+            <form class="voucher-filters" method="GET" action="{{ request()->url() }}" aria-label="Voucher filters">
+                <div class="voucher-filter-heading">
+                    <strong><i class="fas fa-sliders-h" aria-hidden="true"></i> Filter vouchers</strong>
+                    <span class="muted">Find a customer, number or draw</span>
+                </div>
+                <div class="voucher-filter-main">
+                    <div class="voucher-filter-scroll" tabindex="0" aria-label="Scroll voucher filter fields">
+                        <div class="voucher-filter-fields">
+                            <label class="form-field voucher-filter-search" for="voucher-search">
+                                <span>Customer / voucher</span>
+                                <input id="voucher-search" type="search" name="q" value="{{ old('q', $filters['q']) }}" placeholder="Name, phone, email or voucher ID" maxlength="120">
+                            </label>
+                            <label class="form-field voucher-filter-number" for="voucher-number">
+                                <span>Exact number</span>
+                                <input id="voucher-number" name="number" inputmode="numeric" pattern="[0-9]{{ '{' }}{{ $type === 3 ? 3 : 2 }}{{ '}' }}" maxlength="{{ $type === 3 ? 3 : 2 }}" value="{{ old('number', $filters['number'] ?? '') }}" placeholder="{{ $type === 3 ? 'e.g. 007' : 'e.g. 07' }}">
+                            </label>
+                            <label class="form-field voucher-filter-select" for="voucher-clock">
+                                <span>Draw time</span>
+                                <select id="voucher-clock" name="clock_id">
+                                    <option value="">All draws</option>
+                                    @foreach ($clocks as $clock)
+                                        <option value="{{ $clock->id }}" @selected((string) old('clock_id', $filters['clock_id'] ?? '') === (string) $clock->id)>{{ sprintf('%02d:%02d %s', $clock->hour, $clock->minute, $clock->morning ? 'AM' : 'PM') }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="form-field voucher-filter-status" for="voucher-status">
+                                <span>Status</span>
+                                <select id="voucher-status" name="status">
+                                    <option value="">All statuses</option>
+                                    @foreach ($statuses as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('status', $filters['status'] ?? '') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="form-field voucher-filter-date" for="voucher-from">
+                                <span>Purchased from</span>
+                                <input id="voucher-from" type="date" name="date_from" value="{{ old('date_from', $filters['date_from'] ?? '') }}">
+                            </label>
+                            <label class="form-field voucher-filter-date" for="voucher-to">
+                                <span>Purchased to</span>
+                                <input id="voucher-to" type="date" name="date_to" value="{{ old('date_to', $filters['date_to'] ?? '') }}">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="voucher-filter-actions">
+                        <button class="btn primary" type="submit"><i class="fas fa-filter" aria-hidden="true"></i> Apply</button>
+                        <a class="btn secondary" href="{{ request()->url() }}">Reset</a>
+                    </div>
+                </div>
+                <div class="voucher-filter-tools">
+                    <nav class="voucher-date-presets" aria-label="Purchase date shortcuts">
+                        @foreach ($datePresets as $label => [$from, $to])
+                            @php($selected = ($filters['date_from'] ?? null) === $from && ($filters['date_to'] ?? null) === $to)
+                            <a class="{{ $selected ? 'is-active' : '' }}" href="{{ request()->fullUrlWithQuery(['date_from' => $from, 'date_to' => $to, 'page' => null]) }}" @if($selected) aria-current="true" @endif>{{ $label }}</a>
+                        @endforeach
+                    </nav>
+                    <span class="muted voucher-timezone">Purchase dates · Myanmar time</span>
+                </div>
+                <details class="voucher-more" @if($advancedOpen) open @endif>
+                    <summary>More filters <span class="muted">Amount, admin &amp; sorting</span></summary>
+                    <div class="voucher-advanced-fields">
+                        <label class="form-field" for="voucher-amount-min">
+                            <span>Min amount (MMK)</span>
+                            <input id="voucher-amount-min" type="number" name="amount_min" min="0" step="any" inputmode="decimal" value="{{ old('amount_min', $filters['amount_min'] ?? '') }}" placeholder="No minimum">
+                        </label>
+                        <label class="form-field" for="voucher-amount-max">
+                            <span>Max amount (MMK)</span>
+                            <input id="voucher-amount-max" type="number" name="amount_max" min="0" step="any" inputmode="decimal" value="{{ old('amount_max', $filters['amount_max'] ?? '') }}" placeholder="No maximum">
+                        </label>
+                        <label class="form-field" for="voucher-admin">
+                            <span>Reviewing admin</span>
+                            <select id="voucher-admin" name="admin_id">
+                                <option value="">All admins</option>
+                                <option value="unassigned" @selected(old('admin_id', $filters['admin_id'] ?? '') === 'unassigned')>Unassigned</option>
+                                @foreach($admins as $admin)
+                                    <option value="{{ $admin->id }}" @selected((string) old('admin_id', $filters['admin_id'] ?? '') === (string) $admin->id)>{{ $admin->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="form-field" for="voucher-sort">
+                            <span>Sort by</span>
+                            <select id="voucher-sort" name="sort">
+                                @foreach(['queue' => 'Action queue', 'newest' => 'Newest first', 'oldest' => 'Oldest first', 'amount_desc' => 'Amount: high to low', 'amount_asc' => 'Amount: low to high'] as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('sort', $filters['sort']) === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="form-field" for="voucher-page-size">
+                            <span>Rows per page</span>
+                            <select id="voucher-page-size" name="per_page">
+                                @foreach([25, 50, 100] as $size)
+                                    <option value="{{ $size }}" @selected((int) old('per_page', $filters['per_page']) === $size)>{{ $size }} rows</option>
+                                @endforeach
+                            </select>
+                        </label>
+                    </div>
+                </details>
+            </form>
+
+            <div class="voucher-result-bar" aria-label="Applied voucher filters">
+                <p class="muted">Showing <strong>{{ $vouchers->firstItem() ?? 0 }}–{{ $vouchers->lastItem() ?? 0 }}</strong> of <strong>{{ number_format($vouchers->total()) }}</strong></p>
+                <div class="voucher-filter-chips">
+                    @foreach($chips as $key => $label)
+                        <a href="{{ request()->fullUrlWithQuery([$key => null, 'page' => null]) }}" aria-label="Remove {{ $label }}">{{ $label }} <span aria-hidden="true">×</span></a>
+                    @endforeach
                 </div>
             </div>
 
@@ -149,7 +289,7 @@
                                 </td>
                                 <td>
                                     @if ($voucher->verified_by != 0)
-                                        <strong>{{ $voucher->verified_by($voucher->verified_by)->name }}</strong>
+                                        <strong>{{ $voucher->reviewer?->name ?? 'Former admin' }}</strong>
                                     @else
                                         <span class="muted">Unassigned</span>
                                     @endif
@@ -176,7 +316,12 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9"><span class="muted">No vouchers found.</span></td>
+                                <td colspan="9" class="voucher-empty">
+                                    <i class="fas fa-search" aria-hidden="true"></i>
+                                    <strong>No vouchers match these filters</strong>
+                                    <span class="muted">Try another customer, draw time or purchase date.</span>
+                                    <a class="btn secondary" href="{{ request()->url() }}">Clear all filters</a>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>

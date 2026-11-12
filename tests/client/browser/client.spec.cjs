@@ -29,6 +29,7 @@ test("home wallet shortcuts and browser back restore the source scroll", async (
     await expect(page.locator(".service-card .rate").first()).toContainText(
         "85",
     );
+    await expect(page.locator(".service-action > span:first-child")).toHaveText(["ကစားရန်", "ကစားရန်"]);
     expect((await page.locator(".wallet-heading>.icon").boundingBox()).x).toBe(
         40,
     );
@@ -60,6 +61,11 @@ test("topup and withdraw use the native request fields and one request ID", asyn
 }) => {
     const { calls, errors } = await fixtures(page);
     await page.goto("/app/#/topup");
+    await expect(page.locator("[data-nav-back]")).toBeVisible();
+    await expect(page.locator("[data-nav-back] svg")).toBeVisible();
+    await expect.poll(() => page.locator(".bank-row img").evaluateAll(
+        (images) => images.every((image) => image.complete && image.naturalWidth > 0),
+    )).toBe(true);
     await page.locator('[data-bank="1"]').click();
     await expect(page.locator(".payment-card")).toContainText("Test recipient");
     await page.locator('[name="amount"]').fill("1000");
@@ -91,6 +97,7 @@ test("topup and withdraw use the native request fields and one request ID", asyn
 test("disabled extra draws disappear from result cards and calendar including empty days", async ({ page }) => {
     const { errors } = await fixtures(page, { extraDraws: false });
     await page.goto("/app/#/lottery?type=2");
+    await expect(page.locator('[data-action="buy"]')).toContainText("ကစားမည်");
     await expect(page.locator("[data-saved]")).toHaveCount(2);
     await expect(page.locator('[data-saved="12:01"]')).toHaveText("12");
     await expect(page.locator('[data-saved="09:30"]')).toHaveCount(0);

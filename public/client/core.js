@@ -58,8 +58,12 @@ export const logo = () => `${config.assets}images/mastergyi_logo.webp`;
 export const media = (value) => {
     if (!value) return `${config.assets}images/mastergyi_avatar.webp`;
     if (/^https?:\/\//i.test(value)) return value;
+    const path = String(value).replace(/^\/+/, "");
+    const publicPath = /^(?:img|images|client|storage)\//.test(path)
+        ? path
+        : `storage/${path.replace(/^app\/public\//, "")}`;
     return new URL(
-        `storage/${String(value).replace(/^\/+|^app\/public\//g, "")}`,
+        publicPath,
         new URL("../", config.base),
     ).href;
 };
@@ -483,7 +487,7 @@ for (const event of ["online", "offline"])
     );
 export async function start() {
     state.resources = await fetch(
-        `${config.assets}android-resources.json`,
+        config.resourcesUrl || `${config.assets}android-resources.json`,
     ).then((r) => r.json());
     // Use native text metrics before restoring a screen's scroll position.
     if (document.fonts)

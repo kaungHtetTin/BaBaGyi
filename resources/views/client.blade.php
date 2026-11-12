@@ -12,13 +12,13 @@
     <link rel="manifest" href="{{ route('client.manifest') }}">
     <link rel="icon" href="{{ asset('img/master-gyi-favicon.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('client/images/icon-192.png') }}">
-    <link rel="stylesheet" href="{{ asset('client/app.css') }}">
+    @vite('public/client/app.css')
 </head>
 <body>
     <div id="client-root" aria-busy="true"><div class="boot"><img src="{{ asset('client/images/mastergyi_logo.webp') }}" alt="MasterGyi" width="80" height="80"><div class="spinner" role="status" aria-label="Loading"></div></div></div>
     <div id="dialog-root"></div><div id="toast-root" role="status" aria-live="polite"></div>
     <script>window.CLIENT_CONFIG = @json($clientConfig);</script>
-    <script type="module" src="{{ asset('client/app.js') }}"></script>
+    @vite('public/client/app.js')
     <noscript><p class="notice">MasterGyi requires JavaScript. Please enable JavaScript to use the app.</p></noscript>
 </body>
 </html>

@@ -1,11 +1,49 @@
 {
+  "public/client/app.css": {
+    "file": "assets/app-c5a2e149.css",
+    "isEntry": true,
+    "src": "public/client/app.css"
+  },
+  "public/client/app.js": {
+    "file": "assets/app-b24dbdbc.js",
+    "isEntry": true,
+    "src": "public/client/app.js"
+  },
+  "public/client/fonts/NotoSansMyanmarUI-Bold.woff2": {
+    "file": "assets/NotoSansMyanmarUI-Bold-9e973182.woff2",
+    "src": "public/client/fonts/NotoSansMyanmarUI-Bold.woff2"
+  },
+  "public/client/fonts/NotoSansMyanmarUI-Regular.woff2": {
+    "file": "assets/NotoSansMyanmarUI-Regular-39072c68.woff2",
+    "src": "public/client/fonts/NotoSansMyanmarUI-Regular.woff2"
+  },
+  "public/client/fonts/Roboto-Regular.woff2": {
+    "file": "assets/Roboto-Regular-977f79fe.woff2",
+    "src": "public/client/fonts/Roboto-Regular.woff2"
+  },
+  "public/client/fonts/poppins_bold.woff2": {
+    "file": "assets/poppins_bold-965676b3.woff2",
+    "src": "public/client/fonts/poppins_bold.woff2"
+  },
+  "public/client/fonts/poppins_medium.woff2": {
+    "file": "assets/poppins_medium-932052bc.woff2",
+    "src": "public/client/fonts/poppins_medium.woff2"
+  },
+  "public/client/fonts/poppins_regular.woff2": {
+    "file": "assets/poppins_regular-8dd6d07f.woff2",
+    "src": "public/client/fonts/poppins_regular.woff2"
+  },
+  "public/client/fonts/poppins_semibold.woff2": {
+    "file": "assets/poppins_semibold-9425d4f5.woff2",
+    "src": "public/client/fonts/poppins_semibold.woff2"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-a2c96533.css",
+    "file": "assets/app-041cea04.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
   "resources/js/app.js": {
-    "file": "assets/app-de1aeb7e.js",
+    "file": "assets/app-167c5bfd.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   }

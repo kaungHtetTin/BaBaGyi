@@ -20,6 +20,10 @@ class Voucher extends Model
         return $this->belongsTo(Clock::class);
     }
 
+    public function reviewer(){
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
     public function verified_by($admin_id){
         return User::find($admin_id);
     }

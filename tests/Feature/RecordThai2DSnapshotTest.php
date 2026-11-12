@@ -55,6 +55,8 @@ class RecordThai2DSnapshotTest extends TestCase
             'twod' => '07', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:00',
         ], $overrides)])->push([
             'server_time' => CarbonImmutable::now('Asia/Yangon')->setSecond(4)->toDateTimeString(),
+            'live' => ['twod' => '99', 'date' => '2026-11-09',
+                'time' => CarbonImmutable::now('Asia/Yangon')->setSecond(4)->toDateTimeString()],
         ])]);
     }
 
@@ -141,6 +143,9 @@ class RecordThai2DSnapshotTest extends TestCase
             'yesterday timestamp' => [['time' => '2026-11-06 09:30:00']],
             'future timestamp' => [['time' => '2026-11-09 09:31:01']],
             'malformed timestamp' => [['time' => 'invalid']],
+            'missing timestamp' => [['time' => null]],
+            'timestamp with trailing text' => [['time' => '2026-11-09 09:30:00 trailing']],
+            'invalid seconds' => [['time' => '2026-11-09 09:30:60']],
         ];
     }
 
@@ -208,7 +213,8 @@ class RecordThai2DSnapshotTest extends TestCase
             Http::preventStrayRequests();
             Http::fake(['api.thaistock2d.com/live' => Http::sequence()
                 ->push(['server_time' => $target->subSecond()->toDateTimeString(),
-                    'live' => ['twod' => '99']])
+                    'live' => ['twod' => '99', 'date' => '2026-11-09',
+                        'time' => $target->subSecond()->toDateTimeString()]])
                 ->push(['server_time' => $target->toDateTimeString(), 'live' => [
                     'twod' => '07', 'date' => '2026-11-09',
                     'time' => $target->subSecond()->toDateTimeString(),
@@ -220,14 +226,14 @@ class RecordThai2DSnapshotTest extends TestCase
 
             $this->artisan('lottery:record-thai-2d', ['time' => $time])->assertExitCode(0);
 
-            Http::assertSentCount(2);
-            $this->assertDatabaseHas('lotteries', ['clock_id' => $clockId, 'number' => '07',
+            Http::assertSentCount(3);
+            $this->assertDatabaseHas('lotteries', ['clock_id' => $clockId, 'number' => '89',
                 'created_at' => $target->toDateTimeString()]);
         }
         $this->assertDatabaseCount('lotteries', 2);
     }
 
-    public function test_late_server_second_is_logged_without_saving_a_later_digit(): void
+    public function test_late_live_second_is_logged_without_saving_a_later_digit(): void
     {
         $this->freezeAt('2026-11-09 09:30:08');
         Log::spy();
@@ -238,15 +244,15 @@ class RecordThai2DSnapshotTest extends TestCase
         $this->assertDatabaseCount('lotteries', 0);
         Log::shouldHaveReceived('warning')->once()->withArgs(fn ($message, $context) =>
             $context['target_time'] === '2026-11-09 09:30:00'
-            && $context['server_time'] === '2026-11-09 09:30:08');
+            && $context['live_time'] === '2026-11-09 09:30:08');
     }
 
-    public function test_api_clock_selects_the_digit_even_when_local_clock_is_ahead(): void
+    public function test_live_time_selects_the_digit_even_when_server_and_local_clocks_are_ahead(): void
     {
         $this->freezeAt('2026-11-09 09:30:08');
         Http::fake(['api.thaistock2d.com/live' => Http::response([
-            'server_time' => '2026-11-09 09:30:00',
-            'live' => ['twod' => '00', 'date' => '2026-11-09', 'time' => '2026-11-09 09:29:59'],
+            'server_time' => '2026-11-09 09:30:08',
+            'live' => ['twod' => '00', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:00'],
         ])]);
 
         $this->artisan('lottery:record-thai-2d', ['time' => '09:30'])->assertExitCode(0);
@@ -265,10 +271,12 @@ class RecordThai2DSnapshotTest extends TestCase
             Http::swap(new \Illuminate\Http\Client\Factory());
             Http::preventStrayRequests();
             Http::fake(['api.thaistock2d.com/live' => Http::sequence()
-                ->push(['server_time' => $target->subSecond()->toDateTimeString()])
-                ->push(['server_time' => $target->addSeconds($second)->toDateTimeString(),
+                ->push(['server_time' => $target->addSeconds(8)->toDateTimeString(),
+                    'live' => ['twod' => '07', 'date' => '2026-11-09',
+                        'time' => $target->subSecond()->toDateTimeString()]])
+                ->push(['server_time' => $target->addSeconds(9)->toDateTimeString(),
                     'live' => ['twod' => '99', 'date' => '2026-11-09',
-                        'time' => $target->subSeconds(2)->toDateTimeString()]])]);
+                        'time' => $target->addSeconds($second)->toDateTimeString()]])]);
 
             $this->artisan('lottery:record-thai-2d', ['time' => $time])->assertExitCode(0);
             $this->assertDatabaseHas('lotteries', ['clock_id' => $clockId, 'number' => '99',
@@ -304,16 +312,48 @@ class RecordThai2DSnapshotTest extends TestCase
         Http::assertSentCount(1);
     }
 
+    public function test_live_time_controls_both_slots_when_server_time_is_behind(): void
+    {
+        foreach (['09:30' => 11, '14:00' => 13] as $time => $clockId) {
+            $target = CarbonImmutable::parse('2026-11-09 '.$time.':00', 'Asia/Yangon');
+            $this->freezeAt($target->toDateTimeString());
+            Http::swap(new \Illuminate\Http\Client\Factory());
+            Http::preventStrayRequests();
+            Http::fake(['api.thaistock2d.com/live' => Http::sequence()
+                ->push(['server_time' => $target->subSecond()->toDateTimeString(),
+                    'live' => ['twod' => '00', 'date' => '2026-11-09',
+                        'time' => $target->toDateTimeString()]])]);
+
+            $this->artisan('lottery:record-thai-2d', ['time' => $time])->assertExitCode(0);
+
+            $this->assertDatabaseHas('lotteries', ['clock_id' => $clockId, 'number' => '00']);
+            Http::assertSentCount(1);
+        }
+    }
+
+    public function test_live_time_after_window_is_rejected_even_when_server_time_is_at_target(): void
+    {
+        Http::fake(['api.thaistock2d.com/live' => Http::response([
+            'server_time' => '2026-11-09 09:30:00',
+            'live' => ['twod' => '99', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:04'],
+        ])]);
+
+        $this->artisan('lottery:record-thai-2d', ['time' => '09:30'])->assertExitCode(1);
+
+        $this->assertDatabaseCount('lotteries', 0);
+        Http::assertSentCount(1);
+    }
+
     /** @dataProvider invalidServerTimes */
-    public function test_missing_or_invalid_server_time_cannot_select_a_digit($serverTime): void
+    public function test_server_time_does_not_control_live_digit_selection($serverTime): void
     {
         Http::fake(['api.thaistock2d.com/live' => Http::response([
             'server_time' => $serverTime,
             'live' => ['twod' => '07', 'date' => '2026-11-09', 'time' => '2026-11-09 09:30:00'],
         ])]);
 
-        $this->artisan('lottery:record-thai-2d', ['time' => '09:30'])->assertExitCode(1);
-        $this->assertDatabaseCount('lotteries', 0);
+        $this->artisan('lottery:record-thai-2d', ['time' => '09:30'])->assertExitCode(0);
+        $this->assertDatabaseHas('lotteries', ['clock_id' => 11, 'number' => '07']);
     }
 
     public static function invalidServerTimes(): array
