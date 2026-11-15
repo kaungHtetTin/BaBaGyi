@@ -275,7 +275,7 @@ function contacts(params = {}, forgot = false) {
         page(
             forgot ? t("password") : "MasterGyi",
             forgot ? "အသစ်တောင်းခံမည်" : t("contact"),
-            `<div class="page">${forgot ? `<p class="surface">${esc(nativeText("activity_forget_password", "textView4"))}</p>` : `<h1 class="title">${esc(t("contact"))}</h1><p class="caption">${esc(t("ui_support_intro"))}</p>`}<div data-loading style="margin-top:20px">${loading()}</div></div>`,
+            `<div class="page">${forgot ? `<p class="surface">${esc(nativeText("activity_forget_password", "textView4"))}</p>` : `<h1 class="title">${esc(t("contact"))}</h1><p class="caption">${esc(t("ui_support_intro"))}</p>`}<div class="contact-list" data-loading style="margin-top:20px">${loading()}</div></div>`,
             { main, tab: "contacts" },
         ),
         async (signal) => {
@@ -285,7 +285,7 @@ function contacts(params = {}, forgot = false) {
                 ? rows
                       .map(
                           (x) =>
-                              `<article class="surface contact-row">${icon("ic_home_support")}<div><small>${esc(x.service)}</small><strong>${esc(x.contact)}</strong></div><nav class="contact-actions" aria-label="${esc(x.service)}">${x.launch_url && /^(https:\/\/|viber:\/\/)/.test(x.launch_url) ? `<a class="copy-button" href="${esc(x.launch_url)}" target="_blank" rel="noopener noreferrer">Open ${esc(x.service)}</a>${x.launch_url.startsWith("viber:") ? `<a class="caption" href="https://www.viber.com/en/download/" target="_blank" rel="noopener noreferrer">Get Viber</a>` : ""}` : ""}<button type="button" class="copy-button" data-copy="${esc(x.contact)}">${esc(t("ui_copy"))}</button></nav></article>`,
+                              `<article class="surface contact-row ${String(x.service).toLowerCase() === "viber" ? "contact-viber" : "contact-telegram"}"><div class="contact-heading"><span class="contact-badge" aria-hidden="true">${icon(String(x.service).toLowerCase() === "telegram" ? "contact_telegram" : "contact_viber")}</span><div class="contact-details"><h2>${esc(x.service)}</h2><p>${esc(x.contact)}</p></div></div><nav class="contact-actions" aria-label="${esc(x.service)}">${x.launch_url && /^(https:\/\/|viber:\/\/)/.test(x.launch_url) ? `<a class="contact-open" href="${esc(x.launch_url)}" target="_blank" rel="noopener noreferrer"><span>Open ${esc(x.service)}</span>${icon("ic_home_arrow")}</a>` : ""}<button type="button" class="contact-copy" data-copy="${esc(x.contact)}">${icon("round_content_copy_24")}<span>${esc(t("ui_copy"))}</span></button></nav>${x.launch_url?.startsWith("viber:") ? `<p class="contact-install">Viber not installed? <a href="https://www.viber.com/en/download/" target="_blank" rel="noopener noreferrer">Get Viber</a></p>` : ""}</article>`,
                       )
                       .join("")
                 : empty();
