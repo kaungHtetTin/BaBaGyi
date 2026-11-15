@@ -8,6 +8,9 @@
             </div>
         @endif
 
+        @if ($errors->any())
+            <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
+        @endif
         <div class="admin-page-heading">
             <div>
                 <p class="eyebrow">CONTENT SETTINGS</p>
@@ -70,6 +73,7 @@
                                                     <td><strong class="table-primary-line">{{ $contact->service }}</strong></td>
                                                     <td>{{ $contact->contact }}</td>
                                                     <td>
+                                                        <a class="icon-btn small" href="#" data-toggle="modal" data-target="#edit-contact-{{ $contact->id }}" aria-label="Edit {{ $contact->service }}" title="Edit"><i class="fas fa-edit"></i></a>
                                                         <a class="icon-btn small danger" href="#" data-toggle="modal" data-target="#delete-contact-{{ $contact->id }}"
                                                             aria-label="Delete {{ $contact->service }}" title="Delete">
                                                             <i class="fas fa-trash"></i>
@@ -91,7 +95,7 @@
                                     <div>
                                         <p class="eyebrow">CREATE</p>
                                         <h3>Add contact</h3>
-                                        <p>Add a public support channel.</p>
+                                        <p>Telegram: username, t.me link or international phone number. Viber: international phone number (+959...), invite.viber.com, vb.me or Viber chat link.</p>
                                     </div>
                                 </div>
 
@@ -99,14 +103,17 @@
                                     @csrf
                                     <label class="form-field">
                                         <span>Service</span>
-                                        <input type="text" placeholder="Viber, Telegram, etc." name="service" value="{{ old('service') }}">
+                                        <select name="service" required>
+                                            <option value="Telegram" @selected(old('service') === 'Telegram')>Telegram</option>
+                                            <option value="Viber" @selected(old('service') === 'Viber')>Viber</option>
+                                        </select>
                                         @error('service')
                                             <p class="field-error">{{ $message }}</p>
                                         @enderror
                                     </label>
                                     <label class="form-field">
                                         <span>Contact</span>
-                                        <input type="text" placeholder="Phone number or link" name="contact" value="{{ old('contact') }}">
+                                        <input type="text" placeholder="@username, https://t.me/username or +959..." required maxlength="255" name="contact" value="{{ old('contact') }}">
                                         @error('contact')
                                             <p class="field-error">{{ $message }}</p>
                                         @enderror
@@ -272,6 +279,29 @@
     </div>
 
     @foreach ($contacts as $contact)
+        <div class="modal fade" id="edit-contact-{{ $contact->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document"><div class="modal-content">
+                <form class="settings-form" action="{{ route('admin.contacts.update', $contact->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="editing_contact" value="{{ $contact->id }}">
+                    <div class="modal-header"><h5 class="modal-title">Edit contact</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">&times;</button></div>
+                    <div class="modal-body">
+                        <label class="form-field"><span>Service</span>
+                            <select name="service" required>
+                                <option value="">Choose platform</option>
+                                <option value="Telegram" @selected((old('editing_contact') == $contact->id ? old('service') : ucfirst(strtolower($contact->service))) === 'Telegram')>Telegram</option>
+                                <option value="Viber" @selected((old('editing_contact') == $contact->id ? old('service') : ucfirst(strtolower($contact->service))) === 'Viber')>Viber</option>
+                            </select>
+                        </label>
+                        <label class="form-field"><span>Contact</span><input name="contact" value="{{ old('editing_contact') == $contact->id ? old('contact') : $contact->contact }}" required maxlength="255"></label>
+                        <p>Telegram: username, t.me link or +country-code phone. Viber: +country-code phone or Viber chat/invite link.</p>
+                    </div>
+                    <div class="modal-footer"><button class="btn secondary" type="button" data-dismiss="modal">Cancel</button><button class="btn primary" type="submit">Save contact</button></div>
+                </form>
+            </div></div>
+        </div>
         <div class="modal fade" id="delete-contact-{{ $contact->id }}" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -351,6 +381,9 @@
 
     <script>
         $(document).ready(function () {
+            @if ($errors->any() && old('editing_contact'))
+                $('#edit-contact-' + @json(old('editing_contact'))).modal('show');
+            @endif
             var tabs = $('[data-misc-tab]');
             var panels = $('.misc-tab-panel');
 

@@ -23,23 +23,43 @@ class ContactController extends Controller
     }
 
     public function store(Request $req){
-        $req->validate([
-            'service'=>'required',
-            'contact'=>'required',
-        ]);
-
-        $service = $req->service;
-        $contact = $req->contact;
+        $data = $this->validatedContact($req);
 
         $Contact = new Contact();
-        $Contact->service = $service;
-        $Contact->contact = $contact;
+        $Contact->service = $data['service'];
+        $Contact->contact = $data['contact'];
         $Contact->save();
         return back()->with('msg','New contact was successfully added');
     }
 
     public function delete($id){
-        Contact::find($id)->delete();
+        Contact::findOrFail($id)->delete();
         return back()->with('msg','The contact was successfully deleted');
+    }
+
+    public function update(Request $req, $id)
+    {
+        $contact = Contact::findOrFail($id);
+        $data = $this->validatedContact($req);
+        $contact->service = $data['service'];
+        $contact->contact = $data['contact'];
+        $contact->save();
+        return back()->with('msg', 'The contact was successfully updated');
+    }
+
+    private function validatedContact(Request $req): array
+    {
+        $data = $req->validate([
+            'service' => 'required|string|in:Telegram,Viber',
+            'contact' => 'required|string|max:255',
+        ]);
+        $value = \App\Support\ContactLink::normalize($data['service'], $data['contact']);
+        if ($value === null) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'contact' => 'Use a Telegram username, t.me link or international phone number; for Viber use an international phone number (+959...), invite.viber.com/vb.me link or Viber chat link.',
+            ]);
+        }
+        $data['contact'] = $value;
+        return $data;
     }
 }

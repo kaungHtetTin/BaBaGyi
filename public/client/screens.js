@@ -258,7 +258,7 @@ function wallet() {
                 ["withdraw", "withdraw", "ic_home_withdraw"],
                 ["wallet-history", "history", "ic_home_history"],
             ],
-        )}</div><section class="surface hours"><h2>${esc(t("top_up_withdraw_service_hour"))}</h2><hr><h3>${esc(t("top_up"))}</h3><p class="caption">${esc(t("daily_08_00_am_to_08_00_pm"))}</p><h3>${esc(t("withdraw"))}</h3><p class="caption">${esc(t("daily_12_01_pm_to_08_00_pm"))}</p></section><h2 class="section-title">${esc(t("faq"))}</h2>${menuRow("how_to_top_up", "guide?kind=topup", "ic_visit_to_web")}${menuRow("how_to_withdraw", "guide?kind=withdraw", "ic_visit_to_web")}${errorBox()}</div>`;
+        )}</div><h2 class="section-title">${esc(t("faq"))}</h2>${menuRow("how_to_top_up", "guide?kind=topup", "ic_visit_to_web")}${menuRow("how_to_withdraw", "guide?kind=withdraw", "ic_visit_to_web")}${errorBox()}</div>`;
     const view = screen(
         page("MasterGyi", t("pocket"), body(), { main: true, tab: "wallet" }),
         async (signal) => {
@@ -285,7 +285,7 @@ function contacts(params = {}, forgot = false) {
                 ? rows
                       .map(
                           (x) =>
-                              `<article class="surface contact-row" data-copy="${esc(x.contact)}" tabindex="0" role="button" aria-label="${esc(x.service)} ${esc(x.contact)}">${icon("ic_home_support")}<div><small>${esc(x.service)}</small><strong>${esc(x.contact)}</strong></div><button class="copy-button">${esc(t("ui_copy"))}</button></article>`,
+                              `<article class="surface contact-row">${icon("ic_home_support")}<div><small>${esc(x.service)}</small><strong>${esc(x.contact)}</strong></div><nav class="contact-actions" aria-label="${esc(x.service)}">${x.launch_url && /^(https:\/\/|viber:\/\/)/.test(x.launch_url) ? `<a class="copy-button" href="${esc(x.launch_url)}" target="_blank" rel="noopener noreferrer">Open ${esc(x.service)}</a>${x.launch_url.startsWith("viber:") ? `<a class="caption" href="https://www.viber.com/en/download/" target="_blank" rel="noopener noreferrer">Get Viber</a>` : ""}` : ""}<button type="button" class="copy-button" data-copy="${esc(x.contact)}">${esc(t("ui_copy"))}</button></nav></article>`,
                       )
                       .join("")
                 : empty();

@@ -110,6 +110,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/contacts',[ContactController::class,'index'])->name('admin.contacts');
         Route::post('/contacts',[ContactController::class,'store'])->name('admin.contacts.store');
+        Route::put('/contacts/{id}',[ContactController::class,'update'])->name('admin.contacts.update');
         Route::delete('/contacts/{id}',[ContactController::class,'delete'])->name('admin.contacts.remove');
 
         Route::put('/numbers/disable-all',[NumberController::class,'disableAll'])->name('admin.numbers.disable-all');
