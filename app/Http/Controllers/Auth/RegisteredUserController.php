@@ -69,12 +69,15 @@ class RegisteredUserController extends Controller
             return back()->withErrors($validator);
         }
 
-        $user = User::insert([
+        $user = new User([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'admin' => true,
         ]);
+        // Admins sign in with email; the shared users table still requires a phone value.
+        $user->phone = '';
+        $user->admin = true;
+        $user->save();
 
         return redirect()->route('admin.admins')->with('msg','New admin was added successfully');
     }
