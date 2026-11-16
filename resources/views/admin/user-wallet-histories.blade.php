@@ -41,7 +41,12 @@
                                     <strong class="table-primary-line">{{ $history->created_at->diffForHumans() }}</strong>
                                     <small class="table-secondary-line">{{ $history->created_at->format('M d, Y h:i A') }}</small>
                                 </td>
-                                <td><strong>{{ $history->title }}</strong></td>
+                                <td><strong>{{ $history->title }}</strong>
+                                    @if($history->bonusPayment)
+                                        <small class="table-secondary-line">Paid by {{ $history->bonusPayment->admin->name ?? 'Deleted admin' }} · Bonus #{{ $history->bonusPayment->id }}</small>
+                                        @if($history->bonusPayment->note)<small class="table-secondary-line">{{ $history->bonusPayment->note }}</small>@endif
+                                    @endif
+                                </td>
                                 <td>
                                     @if ($history->income == 1)
                                         <span class="status status-success"><span class="status-dot"></span>Income</span>

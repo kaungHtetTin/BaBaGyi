@@ -148,6 +148,10 @@
         </a>
 
         <p class="admin-nav-section">Settings</p>
+        <a class="nav-link {{ $activeClass('admin.telegram', 'admin.telegram.*') }}" href="{{ route('admin.telegram') }}" @if($activeCurrent('admin.telegram', 'admin.telegram.*')) aria-current="page" @endif>
+            <i class="fab fa-fw fa-telegram-plane"></i>
+            <span>Telegram Alerts</span>
+        </a>
         <a class="nav-link {{ $activeClass('admin.payment-methods', 'admin.payment-methods.*') }}" href="{{ route('admin.payment-methods') }}" @if($activeCurrent('admin.payment-methods', 'admin.payment-methods.*')) aria-current="page" @endif>
             <i class="fas fa-fw fa-wallet"></i>
             <span>Payment Methods</span>

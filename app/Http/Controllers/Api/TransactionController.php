@@ -12,29 +12,33 @@ class TransactionController extends Controller
 {
     
     public function store(Request $req){
-        $req->validate([
-            'payment_method_id' => 'required',
-            'amount' => 'required',
-            'bank_transaction_id'=>'required',
-        ]);
+        return DB::transaction(function () use ($req) {
+            $req->validate([
+                'payment_method_id' => 'required',
+                'amount' => 'required',
+                'bank_transaction_id'=>'required',
+            ]);
 
-        $user = $req->user();
- 
-        $transaction = new Transaction();
-        $transaction->payment_method_id = $req->payment_method_id;
-        $transaction->user_id = $user->id;
-        $transaction->amount = $req->amount;
-        $transaction->bank_transaction_id = $req->bank_transaction_id;
-        $transaction->save();
+            $user = $req->user();
 
-        $payment_method = PaymentMethod::find($req->payment_method_id);
-        $payment_method->increment('new_payment_count');
-        $payment_method->refresh();
+            $transaction = new Transaction();
+            $transaction->payment_method_id = $req->payment_method_id;
+            $transaction->user_id = $user->id;
+            $transaction->amount = $req->amount;
+            $transaction->bank_transaction_id = $req->bank_transaction_id;
+            $transaction->save();
 
-        return response()->json([
-            'payment_method'=>$payment_method,
-            'amount'=>$req->amount,
-        ],200);
+            $payment_method = PaymentMethod::find($req->payment_method_id);
+            $payment_method->increment('new_payment_count');
+            $payment_method->refresh();
+
+            app(\App\Services\TelegramNotifier::class)->record($transaction);
+
+            return response()->json([
+                'payment_method'=>$payment_method,
+                'amount'=>$req->amount,
+            ],200);
+        });
         
     }
 }

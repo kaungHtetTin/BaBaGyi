@@ -59,7 +59,7 @@ class UserController extends Controller
 
     public function wallet_histories($id){
         $user = User::find($id);
-        $wallet_histories = WalletHistory::where('user_id',$user->id)->orderBy('id','desc')->paginate(100);
+        $wallet_histories = WalletHistory::with('bonusPayment.admin:id,name')->where('user_id',$user->id)->orderBy('id','desc')->paginate(100);
         return view('admin.user-wallet-histories',[
             'page_name'=> "Users",
             'user' => $user,
@@ -68,7 +68,7 @@ class UserController extends Controller
     }
 
     public function setting($id){
-        $user = User::find($id);
+        $user = User::findOrFail($id);
         return view('admin.user-setting',[
             'page_name'=> "Users",
             'user' => $user,

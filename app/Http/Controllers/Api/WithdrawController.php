@@ -49,6 +49,8 @@ class WithdrawController extends Controller
             $user->balance = $user->balance - $req->amount;
             $user->save();
 
+            app(\App\Services\TelegramNotifier::class)->record($withdraw);
+
             return response()->json(['status'=>'success']);
         });
     }

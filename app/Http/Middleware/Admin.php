@@ -22,7 +22,7 @@ class Admin
         if($user->admin==1){
             return $next($request);
         }else{
-            return "Access Denied";
+            abort(403, 'Access Denied');
         }
     }
 }

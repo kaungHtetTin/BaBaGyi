@@ -1,11 +1,15 @@
 @extends('admin.master')
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid user-setting-page">
         @if (session('msg'))
             <div class="alert alert-success">
                 {{ session('msg') }}
             </div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
         @endif
 
         <div class="admin-page-heading">
@@ -62,6 +66,28 @@
                 <a href="{{ route('admin.users.wallet-histories', $user->id) }}"><i class="fas fa-wallet"></i> Wallet</a>
                 <a class="active" href="{{ route('admin.users.setting', $user->id) }}"><i class="fas fa-user-cog"></i> Setting</a>
             </nav>
+        </section>
+
+        <section class="panel glass user-bonus-panel" aria-labelledby="bonus-heading">
+            <div class="panel-heading">
+                <div><p class="eyebrow">WALLET CREDIT</p><h2 id="bonus-heading">Pay bonus</h2>
+                    <p class="panel-subtitle">Credit a bonus directly to this user’s wallet.</p></div>
+                <a class="btn secondary" href="{{ route('admin.users.wallet-histories', $user->id) }}">View wallet history</a>
+            </div>
+            <form id="pay-bonus-form" class="settings-form" action="{{ route('admin.users.bonus.store', $user->id) }}" method="POST">
+                @csrf
+                <input type="hidden" name="bonus_request_id" value="{{ old('bonus_request_id', (string) \Illuminate\Support\Str::uuid()) }}">
+                <div class="settings-form-grid compact">
+                    <label class="form-field"><span>Bonus amount (MMK)</span>
+                        <input id="bonus-amount" name="bonus_amount" type="number" min="1" max="2147483647" step="1" inputmode="numeric" value="{{ old('bonus_amount') }}" placeholder="e.g. 5000" required>
+                    </label>
+                    <label class="form-field"><span>Bonus note (optional)</span>
+                        <input id="bonus-note" name="bonus_note" maxlength="255" value="{{ old('bonus_note') }}" placeholder="e.g. Welcome bonus">
+                    </label>
+                </div>
+                <p class="muted">The amount is added immediately and recorded as Bonus in wallet history.</p>
+                <div class="settings-form-actions"><button id="review-bonus" class="btn primary" type="submit"><i class="fas fa-gift" aria-hidden="true"></i> Pay bonus</button></div>
+            </form>
         </section>
 
         <section class="admin-grid">
@@ -142,4 +168,56 @@
             </article>
         </section>
     </div>
+
+    <div class="modal fade" id="pay-bonus-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="pay-bonus-title" aria-describedby="pay-bonus-description">
+        <div class="modal-dialog" role="document"><div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="pay-bonus-title">Confirm bonus payment</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">&times;</button></div>
+            <div class="modal-body">
+                <p id="pay-bonus-description">Pay <strong id="bonus-review-amount"></strong> MMK to <strong>{{ $user->name }}</strong> ({{ $user->phone }})?</p>
+                <p id="bonus-review-note" class="muted"></p>
+                <p class="mb-0">This will immediately increase the user’s wallet balance.</p>
+            </div>
+            <div class="modal-footer"><button class="btn secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button id="confirm-bonus" class="btn primary" type="button">Confirm payment</button></div>
+        </div></div>
+    </div>
+    <style>
+        .admin-main:has(.user-setting-page) { background: var(--color-bg) !important; }
+        .user-bonus-panel { margin-bottom: 14px; background: var(--color-surface); }
+        #pay-bonus-modal .close { color: var(--color-text); text-shadow: none; }
+        .user-bonus-panel .settings-form-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+        @media (max-width: 760px) { .user-bonus-panel .settings-form-grid { grid-template-columns: minmax(0, 1fr); } .user-bonus-panel .btn, #pay-bonus-modal .btn { min-height: 44px; } }
+    </style>
 @endsection
+
+@push('scripts')
+<script>
+    (function () {
+        var form = document.getElementById('pay-bonus-form');
+        var confirmed = false;
+        var sending = false;
+        form.addEventListener('submit', function (event) {
+            if (sending) { event.preventDefault(); return; }
+            if (!confirmed) {
+                event.preventDefault();
+                document.getElementById('bonus-review-amount').textContent = Number(document.getElementById('bonus-amount').value).toLocaleString('en-US');
+                var note = document.getElementById('bonus-note').value.trim();
+                document.getElementById('bonus-review-note').textContent = note ? 'Note: ' + note : '';
+                $('#pay-bonus-modal').modal('show');
+                return;
+            }
+            sending = true;
+            document.getElementById('review-bonus').disabled = true;
+            document.getElementById('confirm-bonus').disabled = true;
+            document.getElementById('confirm-bonus').textContent = 'Paying…';
+        });
+        document.getElementById('confirm-bonus').addEventListener('click', function () {
+            confirmed = true;
+            form.requestSubmit();
+        });
+        $('#pay-bonus-modal').on('hidden.bs.modal', function () { confirmed = false; });
+        window.addEventListener('pageshow', function (event) { if (event.persisted) window.location.reload(); });
+    })();
+</script>
+@endpush

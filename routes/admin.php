@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/{id}/vouchers',[UserController::class,'vouchers'])->name('admin.users.vouchers');
         Route::get('/users/{id}/wallet-histories',[UserController::class,'wallet_histories'])->name('admin.users.wallet-histories');
         Route::get('/users/{id}/setting',[UserController::class,'setting'])->name('admin.users.setting');
+        Route::post('/users/{id}/bonus', [\App\Http\Controllers\BonusPaymentController::class, 'store'])->name('admin.users.bonus.store');
         Route::put('/users/{id}/disable',[UserController::class,'disable'])->name('admin.users.disable');
         Route::put('/users/{id}/activate',[UserController::class,'activate'])->name('admin.users.activate');
         Route::put('/users/{id}/password-reset',[UserController::class,'resetPassword'])->name('admin.users.password-reset');
@@ -109,6 +110,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/change-password',[ProfileController::class,'changePassword'])->name('admin.password.modify');
 
         Route::get('/contacts',[ContactController::class,'index'])->name('admin.contacts');
+        Route::get('/telegram', [\App\Http\Controllers\TelegramSettingController::class, 'index'])->name('admin.telegram');
+        Route::put('/telegram', [\App\Http\Controllers\TelegramSettingController::class, 'update'])->name('admin.telegram.update');
+        Route::post('/telegram/test', [\App\Http\Controllers\TelegramSettingController::class, 'test'])->middleware('throttle:6,1')->name('admin.telegram.test');
+        Route::post('/telegram/alerts/{id}/retry', [\App\Http\Controllers\TelegramSettingController::class, 'retry'])->middleware('throttle:20,1')->name('admin.telegram.retry');
         Route::post('/contacts',[ContactController::class,'store'])->name('admin.contacts.store');
         Route::put('/contacts/{id}',[ContactController::class,'update'])->name('admin.contacts.update');
         Route::delete('/contacts/{id}',[ContactController::class,'delete'])->name('admin.contacts.remove');

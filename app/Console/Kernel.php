@@ -24,6 +24,7 @@ class Kernel extends ConsoleKernel
         // })->everyMinute()->name('scheduler-heartbeat');
 
         $schedule->command('inspire')->hourly();
+        $schedule->command('telegram:send-pending')->everyMinute()->withoutOverlapping(5);
 
         // History only: these commands do not settle vouchers or reset numbers.
         // Arm capture one minute early; the API server clock selects the first valid digit.

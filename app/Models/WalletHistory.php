@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class WalletHistory extends Model
 {
     use HasFactory;
+
+    public function bonusPayment(){
+        return $this->hasOne(BonusPayment::class);
+    }
     public function user(){
         return $this->belongsTo(User::class);
     }
