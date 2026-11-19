@@ -31,32 +31,39 @@ class MidnightLotteryResetTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_all_lotteries_return_to_auto_and_only_thai_2d_availability_changes(): void
+    public function test_release_modes_are_preserved_and_only_thai_2d_availability_changes(): void
     {
         $this->artisan('command:runat0001am')->assertExitCode(0);
-        $this->assertSame(0, DB::table('lottery_types')->where('release_mode', '!=', 1)->count());
+        $this->assertReleaseModesUnchanged();
         $this->assertSame(4, DB::table('lottery_types')->count());
         $this->assertSame([1 => 0, 2 => 1, 3 => 1, 8 => 0], DB::table('lottery_types')
             ->orderBy('id')->pluck('open', 'id')->all());
         $this->artisan('command:runat0001am')->assertExitCode(0);
-        $this->assertSame(4, DB::table('lottery_types')->where('release_mode', 1)->count());
+        $this->assertReleaseModesUnchanged();
     }
 
-    public function test_holiday_uses_the_myanmar_date_and_keeps_thai_2d_closed_in_auto_mode(): void
+    public function test_holiday_uses_the_myanmar_date_and_keeps_thai_2d_closed_without_changing_release_modes(): void
     {
         // 17:31 UTC on November 8 is 00:01 Myanmar time on November 9.
         DB::table('holidays')->insert(['title' => 'Test holiday', 'month' => 11, 'day' => 9]);
         DB::table('lottery_types')->where('id', 2)->update(['open' => 1]);
         $this->artisan('command:runat0001am')->assertExitCode(0);
-        $this->assertDatabaseHas('lottery_types', ['id' => 2, 'open' => 0, 'release_mode' => 1]);
-        $this->assertSame(4, DB::table('lottery_types')->where('release_mode', 1)->count());
+        $this->assertDatabaseHas('lottery_types', ['id' => 2, 'open' => 0, 'release_mode' => 0]);
+        $this->assertReleaseModesUnchanged();
     }
 
     public function test_reset_still_handles_lotteries_when_thai_2d_is_not_configured(): void
     {
         DB::table('lottery_types')->where('id', 2)->delete();
         $this->artisan('command:runat0001am')->assertExitCode(0);
-        $this->assertSame(3, DB::table('lottery_types')->where('release_mode', 1)->count());
+        $this->assertSame([1 => 0, 3 => 1, 8 => 0], DB::table('lottery_types')
+            ->orderBy('id')->pluck('release_mode', 'id')->all());
+    }
+
+    private function assertReleaseModesUnchanged(): void
+    {
+        $this->assertSame([1 => 0, 2 => 0, 3 => 1, 8 => 0], DB::table('lottery_types')
+            ->orderBy('id')->pluck('release_mode', 'id')->all());
     }
 
     public function test_reset_is_scheduled_daily_at_0001_myanmar_time(): void

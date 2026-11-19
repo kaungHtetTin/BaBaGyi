@@ -21,7 +21,7 @@ class RunTaskAt0001AM extends Command
      *
      * @var string
      */
-    protected $description = 'Reset all lotteries to automatic release and update Thai 2D holiday availability';
+    protected $description = 'Update Thai 2D holiday availability';
 
     /**
      * Execute the console command.
@@ -33,8 +33,6 @@ class RunTaskAt0001AM extends Command
         $today = now('Asia/Yangon');
 
         DB::transaction(function () use ($today) {
-            LotteryType::query()->update(['release_mode' => 1]);
-
             $isHoliday = Holiday::where('day', $today->day)
                 ->where('month', $today->month)->exists();
 
